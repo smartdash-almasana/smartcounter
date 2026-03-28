@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Resultado del Proceso - SmartCounter</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-secondary-fixed": "#314055",
+                        "on-surface-variant": "#566166",
+                        "on-secondary": "#f7f9ff",
+                        "inverse-primary": "#dae6fe",
+                        "error-dim": "#4e0309",
+                        "on-primary-fixed-variant": "#515c70",
+                        "on-secondary-container": "#435368",
+                        "on-tertiary": "#e6ffee",
+                        "inverse-surface": "#0b0f10",
+                        "surface-variant": "#d9e4ea",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "primary-dim": "#485367",
+                        "surface-container-high": "#e1e9ee",
+                        "tertiary-container": "#69f6b8",
+                        "on-background": "#2a3439",
+                        "outline-variant": "#a9b4b9",
+                        "surface-tint": "#545f73",
+                        "background": "#f7f9fb",
+                        "on-secondary-fixed-variant": "#4d5d73",
+                        "error": "#9f403d",
+                        "error-container": "#fe8983",
+                        "tertiary-fixed": "#69f6b8",
+                        "outline": "#717c82",
+                        "surface": "#f7f9fb",
+                        "surface-container-low": "#f0f4f7",
+                        "secondary-container": "#d3e4fe",
+                        "on-tertiary-fixed": "#00452d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#e8eff3",
+                        "surface-bright": "#f7f9fb",
+                        "secondary": "#506076",
+                        "on-primary": "#f6f7ff",
+                        "on-error-container": "#752121",
+                        "surface-dim": "#cfdce3",
+                        "tertiary-dim": "#005f40",
+                        "inverse-on-surface": "#9a9d9f",
+                        "primary": "#545f73",
+                        "on-error": "#fff7f6",
+                        "on-surface": "#2a3439",
+                        "tertiary": "#006d4a",
+                        "primary-container": "#d8e3fb",
+                        "surface-container-highest": "#d9e4ea",
+                        "on-primary-fixed": "#354053",
+                        "secondary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "secondary-dim": "#44546a",
+                        "primary-fixed": "#d8e3fb",
+                        "on-primary-container": "#475266",
+                        "primary-fixed-dim": "#cad5ed",
+                        "secondary-fixed-dim": "#c5d6f0",
+                        "on-tertiary-container": "#005a3c"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-screen w-64 z-40 bg-[#f0f4f7] flex flex-col gap-y-6 py-8 px-4 font-['Manrope'] antialiased tracking-tight border-r border-outline-variant/10">
+<div class="mb-4 px-2">
+<div class="text-xl font-extrabold text-[#2a3439] tracking-tighter uppercase mb-1">SmartCounter</div>
+<div class="text-[10px] text-[#545f73] opacity-70 tracking-widest uppercase font-bold">Argentum Ledger</div>
+</div>
+<button class="bg-primary text-on-primary py-3 px-4 rounded-lg flex items-center justify-center gap-2 mb-4 hover:opacity-90 transition-opacity active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">add</span>
+<span class="text-sm font-bold">Nueva Auditoría</span>
+</button>
+<nav class="flex-1 flex flex-col gap-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="text-sm font-medium">Revisiones</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-sm font-medium">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="text-sm font-medium">Reglas</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-sm font-medium">Historial</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-y-1 pt-6 border-t border-[#545f73]/10">
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Configuración</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-[#545f73]/70 hover:bg-[#e1e9ee] rounded-sm transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-medium">Cerrar Sesión</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 h-20 z-30 bg-[#f7f9fb]/80 backdrop-blur-md flex justify-between items-center px-12 w-full border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant">description</span>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-on-surface uppercase tracking-wider">Archivo en proceso</span>
+<span class="text-sm text-on-surface-variant font-medium">Sueldos_Marzo_2026.xlsx • Transporte Sur SRL</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-primary">
+<button class="hover:opacity-80 transition-opacity"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:opacity-80 transition-opacity"><span class="material-symbols-outlined">account_circle</span></button>
+</div>
+</div>
+</header>
+<!-- Main Content Stage -->
+<main class="ml-64 pt-20 pb-12 px-12 min-h-screen">
+<!-- Header Section -->
+<section class="py-10">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h1 class="text-3xl font-extrabold tracking-tighter text-on-surface mb-2">Sueldos_Marzo_2026.xlsx</h1>
+<div class="flex items-center gap-4 text-on-surface-variant text-sm font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">business</span> Transporte Sur SRL</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant/30"></span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Periodo: 03/2026</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant/30"></span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[18px]">description</span> Tipo: Sueldos / LSD</span>
+</div>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="bg-tertiary-container text-on-tertiary-container px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-sm">Análisis Completado</span>
+<p class="text-error font-semibold text-xs bg-error-container/20 px-3 py-1 rounded-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">warning</span> Requiere validación manual en 3 columnas
+                    </p>
+</div>
+</div>
+</section>
+<!-- Analysis Summary Metrics -->
+<section class="grid grid-cols-6 gap-4 mb-10">
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-primary/10">
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Hoja detectada</div>
+<div class="text-xl font-extrabold text-on-surface">Liq. Final</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-primary/10">
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Fila encabezado</div>
+<div class="text-xl font-extrabold text-on-surface">3</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-primary/10">
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Cols. Mapeadas</div>
+<div class="text-xl font-extrabold text-on-surface">12/15</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-error/20">
+<div class="text-[10px] text-error uppercase tracking-widest font-bold mb-1">Ambigüedades</div>
+<div class="text-xl font-extrabold text-error">3</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-outline-variant/20">
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Alertas Técnicas</div>
+<div class="text-xl font-extrabold text-on-surface">5</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-tertiary/20">
+<div class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold mb-1">Filas Procesadas</div>
+<div class="text-xl font-extrabold text-on-surface">24</div>
+</div>
+</section>
+<!-- Split View Panels -->
+<div class="grid grid-cols-10 gap-8 items-start mb-12">
+<!-- Left: Mapping Column Block (60%) -->
+<div class="col-span-6 flex flex-col gap-4">
+<div class="flex justify-between items-center mb-2 px-2">
+<h2 class="text-lg font-bold tracking-tight text-on-surface">Estructura de Mapeo de Columnas</h2>
+<span class="text-xs text-on-surface-variant font-medium uppercase tracking-tighter">Validación de Esquema Canónico</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden shadow-[0px_12px_32px_rgba(42,52,57,0.04)]">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 border-b border-outline-variant/10">
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Etiqueta Original</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Campo Destino</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Estado Mapeo</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 px-6 text-sm font-semibold font-['Inter']">Hab. Bas.</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="text-sm text-on-surface font-medium">Sueldo Básico</span>
+<span class="text-[10px] text-tertiary font-bold">Coincidencia exacta</span>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-tertiary-container/30 text-on-tertiary-container text-[11px] font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Mapeado
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 px-6 text-sm font-semibold font-['Inter']">Ant.</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="text-sm text-on-surface font-medium">Antigüedad</span>
+<span class="text-[10px] text-on-surface-variant/70 font-bold">Revisar correspondencia</span>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-orange-100 text-orange-800 text-[11px] font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">warning_amber</span> Ambiguo
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 px-6 text-sm font-semibold font-['Inter']">Concepto_Desc</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="text-sm text-on-surface font-medium">Descripción Concepto</span>
+<span class="text-[10px] text-tertiary font-bold">Sugerido por historial</span>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-tertiary-container/30 text-on-tertiary-container text-[11px] font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Mapeado
+                                    </span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/30 transition-colors">
+<td class="py-4 px-6 text-sm font-semibold font-['Inter']">Imp. Rem.</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="text-sm text-on-surface font-medium">Importe Remunerativo</span>
+<span class="text-[10px] text-error font-bold">Posible duplicado</span>
+</div>
+</td>
+<td class="py-4 px-6 text-right">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm bg-orange-100 text-orange-800 text-[11px] font-bold">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">warning_amber</span> Ambiguo
+                                    </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right: Actions & Operative Breakdown (40%) -->
+<div class="col-span-4 flex flex-col gap-6">
+<!-- Action Panel -->
+<div class="bg-[#2a3439] text-white p-6 rounded-xl shadow-xl">
+<h3 class="text-sm font-bold uppercase tracking-widest text-surface-container-high/60 mb-4">Acciones de Control</h3>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-tertiary-fixed text-on-tertiary-fixed py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">download</span> Descargar Salida Curada
+                        </button>
+<button class="w-full bg-white/10 text-white border border-white/20 py-3 rounded-lg font-bold hover:bg-white/20 transition-all">
+                            Analizar Otro Archivo
+                        </button>
+<div class="grid grid-cols-2 gap-3 mt-2">
+<button class="bg-white/5 text-[11px] text-white/70 py-2 border border-white/10 rounded-sm hover:bg-white/10">Marcar Revisión</button>
+<button class="bg-white/5 text-[11px] text-white/70 py-2 border border-white/10 rounded-sm hover:bg-white/10">Ver límites actuales</button>
+</div>
+</div>
+</div>
+<!-- Technical Alerts List -->
+<div class="bg-surface-container-low rounded-xl p-6">
+<div class="flex items-center justify-between mb-4">
+<h2 class="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Alertas Técnicas de Integridad</h2>
+<span class="text-[10px] font-bold px-1.5 py-0.5 bg-error-container text-on-error-container rounded-sm uppercase">Filtro: Activas</span>
+</div>
+<div class="space-y-4">
+<div class="flex gap-3 items-start border-l-2 border-error pl-4">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-mono font-bold text-error bg-error-container/10 px-1 py-0.5 rounded-sm">ERR-402</span>
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase">Integridad de Datos</span>
+<span class="text-[10px] font-bold text-error uppercase ml-auto">Crítica</span>
+</div>
+<div class="text-[13px] font-bold text-on-surface leading-tight">CUIL inválido o inexistente en registros</div>
+<div class="text-[11px] text-on-surface-variant/80 mt-1">Se detectaron 3 entradas donde el campo CUIL no cumple con el algoritmo de validación o está vacío.</div>
+</div>
+</div>
+<div class="flex gap-3 items-start border-l-2 border-orange-400 pl-4">
+<div class="flex-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-mono font-bold text-orange-600 bg-orange-100 px-1 py-0.5 rounded-sm">WRN-105</span>
+<span class="text-[10px] font-bold text-on-surface-variant/60 uppercase">Normalización</span>
+<span class="text-[10px] font-bold text-orange-600 uppercase ml-auto">Alta</span>
+</div>
+<div class="text-[13px] font-bold text-on-surface leading-tight">Inconsistencia de formato en Importes</div>
+<div class="text-[11px] text-on-surface-variant/80 mt-1">Detección de celdas con formato texto ('845.200,00') en columna numérica. Forzado a Float64.</div>
+</div>
+</div>
+</div>
+<!-- Operative Normalization Breakdown -->
+<div class="mt-8 pt-6 border-t border-outline-variant/10">
+<h3 class="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider mb-4">Desglose Operativo por Campo</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-[11px]">
+<span class="font-medium text-on-surface-variant">CUIL (Integridad)</span>
+<span class="font-mono text-error font-bold">3 errores [ERR-402]</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-error h-full w-[12%]"></div>
+</div>
+<div class="bg-surface-container-lowest/50 p-2 rounded text-[10px] font-mono text-on-surface-variant italic">
+                                Ejemplo: "Sin asignar", "20-00000000-0"
+                            </div>
+<div class="flex items-center justify-between text-[11px] mt-4">
+<span class="font-medium text-on-surface-variant">Importe (Formatos)</span>
+<span class="font-mono text-orange-600 font-bold">5 avisos [WRN-105]</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-orange-400 h-full w-[21%]"></div>
+</div>
+<div class="bg-surface-container-lowest/50 p-2 rounded text-[10px] font-mono text-on-surface-variant italic">
+                                Ejemplo: "845.200,00" (Type mismatch)
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Curated Preview Section -->
+<section class="mt-8">
+<div class="flex items-end justify-between mb-4">
+<div>
+<h2 class="text-xl font-extrabold tracking-tight text-on-surface">Vista Previa de Salida Curada</h2>
+<p class="text-xs text-on-surface-variant font-medium mt-1">Muestra preliminar de los datos normalizados para exportación</p>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-3 py-2 bg-surface-container-low hover:bg-surface-container-high transition-colors text-on-surface-variant rounded-sm text-[11px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px]">filter_alt</span> Filtrar
+                    </button>
+<button class="flex items-center gap-2 px-3 py-2 bg-surface-container-low hover:bg-surface-container-high transition-colors text-on-surface-variant rounded-sm text-[11px] font-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px]">view_column</span> Columnas
+                    </button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/5 shadow-sm">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low/30 border-b border-outline-variant/10">
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Legajo</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Apellido y Nombre</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">CUIL (Val.)</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Concepto LSD</th>
+<th class="py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Importe Neto</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5 text-[13px]">
+<tr class="hover:bg-surface-container-low/10 transition-colors">
+<td class="py-3 px-6 font-mono text-on-surface-variant">1002</td>
+<td class="py-3 px-6 font-semibold text-on-surface">RODRIGUEZ, MARCOS ESTEBAN</td>
+<td class="py-3 px-6 text-on-surface-variant">20-33445566-7</td>
+<td class="py-3 px-6 text-on-surface">Sueldo Básico</td>
+<td class="py-3 px-6 text-right font-mono font-bold">$ 845.200,00</td>
+</tr>
+<tr class="bg-surface-container-low/10 hover:bg-surface-container-low/20 transition-colors">
+<td class="py-3 px-6 font-mono text-on-surface-variant">1002</td>
+<td class="py-3 px-6 font-semibold text-on-surface">RODRIGUEZ, MARCOS ESTEBAN</td>
+<td class="py-3 px-6 text-on-surface-variant">20-33445566-7</td>
+<td class="py-3 px-6 text-on-surface">Antigüedad</td>
+<td class="py-3 px-6 text-right font-mono font-bold">$ 42.260,00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/10 transition-colors">
+<td class="py-3 px-6 font-mono text-on-surface-variant">1045</td>
+<td class="py-3 px-6 font-semibold text-on-surface">GOMEZ, ANALIA</td>
+<td class="py-3 px-6 text-on-surface-variant">27-22889900-3</td>
+<td class="py-3 px-6 text-on-surface">Sueldo Básico</td>
+<td class="py-3 px-6 text-right font-mono font-bold">$ 790.000,00</td>
+</tr>
+<tr class="bg-surface-container-low/10 hover:bg-surface-container-low/20 transition-colors">
+<td class="py-3 px-6 font-mono text-on-surface-variant">1045</td>
+<td class="py-3 px-6 font-semibold text-on-surface">GOMEZ, ANALIA</td>
+<td class="py-3 px-6 text-on-surface-variant">27-22889900-3</td>
+<td class="py-3 px-6 text-on-surface">Adicional Fallo Caja</td>
+<td class="py-3 px-6 text-right font-mono font-bold">$ 12.000,00</td>
+</tr>
+<tr class="hover:bg-surface-container-low/10 transition-colors">
+<td class="py-3 px-6 font-mono text-on-surface-variant">1056</td>
+<td class="py-3 px-6 font-semibold text-on-surface">LOPEZ, CARLOS HUGO</td>
+<td class="py-3 px-6 text-error/80 italic font-medium">Inválido (ERR-402)</td>
+<td class="py-3 px-6 text-on-surface">Sueldo Básico</td>
+<td class="py-3 px-6 text-right font-mono font-bold">$ 912.400,00</td>
+</tr>
+</tbody>
+</table>
+<div class="p-4 bg-surface-container-low/20 flex items-center justify-between border-t border-outline-variant/10">
+<span class="text-[11px] text-on-surface-variant font-medium uppercase tracking-widest">Mostrando 5 de 1.244 entradas normalizadas</span>
+<button class="text-xs font-bold text-primary hover:underline flex items-center gap-1">Ver Reporte Completo <span class="material-symbols-outlined text-[14px]">arrow_forward</span></button>
+</div>
+</div>
+</section>
+</main>
+</body></html>

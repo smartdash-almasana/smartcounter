@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartCounter - Reglas Alpha SA</title>
+<!-- Fonts: Manrope for Headlines, Inter for UI/Body -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-secondary-container": "#435368",
+              "error-container": "#fe8983",
+              "surface-variant": "#d9e4ea",
+              "error": "#9f403d",
+              "error-dim": "#4e0309",
+              "outline": "#717c82",
+              "on-secondary-fixed-variant": "#4d5d73",
+              "primary-dim": "#485367",
+              "surface-container-high": "#e1e9ee",
+              "primary-fixed": "#d8e3fb",
+              "on-tertiary-container": "#005a3c",
+              "secondary": "#506076",
+              "surface-container": "#e8eff3",
+              "surface-container-low": "#f0f4f7",
+              "on-primary-fixed": "#354053",
+              "on-error-container": "#752121",
+              "on-secondary": "#f7f9ff",
+              "inverse-on-surface": "#9a9d9f",
+              "secondary-fixed": "#d3e4fe",
+              "on-error": "#fff7f6",
+              "secondary-fixed-dim": "#c5d6f0",
+              "on-surface-variant": "#566166",
+              "on-primary-fixed-variant": "#515c70",
+              "primary-container": "#d8e3fb",
+              "surface-tint": "#545f73",
+              "on-primary-container": "#475266",
+              "inverse-surface": "#0b0f10",
+              "tertiary-dim": "#005f40",
+              "on-background": "#2a3439",
+              "surface-bright": "#f7f9fb",
+              "surface-dim": "#cfdce3",
+              "on-secondary-fixed": "#314055",
+              "tertiary-fixed-dim": "#58e7ab",
+              "on-tertiary-fixed": "#00452d",
+              "primary": "#545f73",
+              "on-tertiary": "#e6ffee",
+              "secondary-container": "#d3e4fe",
+              "tertiary-fixed": "#69f6b8",
+              "surface": "#f7f9fb",
+              "inverse-primary": "#dae6fe",
+              "tertiary-container": "#69f6b8",
+              "tertiary": "#006d4a",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#006544",
+              "background": "#f7f9fb",
+              "secondary-dim": "#44546a",
+              "on-surface": "#2a3439",
+              "surface-container-highest": "#d9e4ea",
+              "primary-fixed-dim": "#cad5ed",
+              "outline-variant": "#a9b4b9",
+              "on-primary": "#f6f7ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+            font-size: 20px;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low flex flex-col py-6 px-4 gap-2 z-50 border-r border-outline-variant/10">
+<div class="mb-8 px-2 flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-xl" data-icon="calculate">calculate</span>
+</div>
+<div>
+<h1 class="text-lg font-extrabold text-on-surface tracking-tight leading-none">SmartCounter</h1>
+<p class="text-[9px] uppercase tracking-[0.1em] text-on-surface-variant font-bold mt-1">Productivity Suite</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="task">task</span>
+<span class="text-sm font-medium">Revisiones</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="corporate_fare">corporate_fare</span>
+<span class="text-sm font-medium">Clientes</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded bg-surface-container-lowest text-on-surface shadow-sm font-semibold transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span class="text-sm font-medium">Reglas</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-sm font-medium">Historial</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded text-on-surface-variant hover:bg-surface-container-high transition-all duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Ajustes</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/10 space-y-1">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-2.5 rounded-lg font-semibold text-sm mb-6 transition-all active:opacity-80 shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Nueva Regla
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface text-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Soporte
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface text-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Cerrar Sesión
+            </a>
+</div>
+</aside>
+<!-- Main Content Stage -->
+<main class="ml-64 flex-1 flex flex-col min-w-0">
+<!-- TopAppBar Component -->
+<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-md flex justify-between items-center w-full px-8 py-4 border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<h2 class="text-sm font-bold tracking-tight text-on-surface-variant uppercase font-headline">SmartCounter</h2>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-on-surface">Alpha SA</span>
+<span class="material-symbols-outlined text-xs text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<input class="bg-surface-container-low border-none rounded-full py-1.5 px-4 text-xs w-48 focus:ring-1 focus:ring-primary transition-all" placeholder="Buscar regla..." type="text"/>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-on-surface cursor-pointer p-2 rounded-full hover:bg-surface-container-high transition-colors" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-1.5 h-1.5 bg-error rounded-full"></span>
+</div>
+<div class="flex items-center gap-3 pl-4 border-l border-outline-variant/20">
+<div class="text-right">
+<p class="text-xs font-bold text-on-surface leading-none">Operador 01</p>
+<p class="text-[10px] text-on-surface-variant leading-none mt-1">Supervisor</p>
+</div>
+<img class="w-8 h-8 rounded-full object-cover ring-2 ring-surface-container" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZJHYibwxWI_p3_4HOYuCRiefeh_iILbTZS0PwrqlsJrJTLI5ERRJurEJocsFyf96LWCqMTh5p8MroSWOeNKG79VmcMiTilBceQhcO20CFDuXMG_wO91RfMN53BGFWwVDw5m1ofGpOKCPfordemHNI_z-fXw2Mehc2w6OZMsVplA5mNbza6LWEad43q71cJ7e6lUXqCojxIj8Vy2bRcqqOswsLOytfUhO5GW4PVpHEcFOfxG58hXXEC-PtE_OteicXb3ik7i3xDEY"/>
+</div>
+</div>
+</header>
+<section class="p-8 space-y-8">
+<!-- Editorial Header -->
+<div class="max-w-5xl">
+<h3 class="text-3xl font-extrabold text-on-surface tracking-tight font-headline mb-2">Motor de Reglas Operativas</h3>
+<p class="text-on-surface-variant max-w-2xl leading-relaxed text-sm">Gestión técnica de la lógica de procesamiento para el cliente Alpha SA. Las reglas definidas aquí impactan directamente en la validación automatizada de comprobantes.</p>
+</div>
+<!-- Bento Summary Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-5 border border-outline-variant/10 rounded">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Volumen</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold font-headline text-on-surface">Reglas Activas: 12</span>
+<span class="text-[10px] text-tertiary font-bold">(+2 este mes)</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 border border-outline-variant/10 rounded">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Efectividad</p>
+<div class="flex items-baseline gap-2">
+<span class="text-xl font-bold font-headline text-on-surface">142 Mappings</span>
+<span class="text-[10px] text-on-surface-variant font-medium">(98% Precisión)</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 border border-outline-variant/10 rounded">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Optimización</p>
+<div class="flex items-baseline gap-2">
+<span class="text-xl font-bold font-headline text-on-surface">8 Normalizaciones</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 border border-outline-variant/10 rounded">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-1">Actualización</p>
+<div class="flex items-baseline gap-2">
+<span class="text-sm font-bold text-on-surface">Hoy, 10:45 hs</span>
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="sync">sync</span>
+</div>
+</div>
+</div>
+<div class="flex gap-8 items-start">
+<!-- Main Table Section -->
+<div class="flex-1 min-w-0">
+<div class="bg-surface-container-lowest border border-outline-variant/10 overflow-hidden rounded">
+<div class="px-6 py-4 flex justify-between items-center border-b border-surface-container">
+<h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant">Lógica Activa</h4>
+<div class="flex gap-2">
+<button class="p-1.5 hover:bg-surface-container text-on-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="filter_list">filter_list</span>
+</button>
+<button class="p-1.5 hover:bg-surface-container text-on-surface-variant rounded transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="search">search</span>
+</button>
+</div>
+</div>
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Nombre</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Categoría</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Origen</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Estado</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Último uso</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">Validación IVA-21</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">Impuestos</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-surface-container-high rounded uppercase tracking-tighter">Manual</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary mr-2"></span>
+<span class="text-xs font-medium text-on-surface-variant">Activa</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">Hace 2 min.</td>
+</tr>
+<tr class="bg-primary/5 hover:bg-surface-container-low transition-colors cursor-pointer border-l-2 border-primary">
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">Cruce Proveedores A-Z</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">Logística</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded uppercase tracking-tighter">Sugerida</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary mr-2"></span>
+<span class="text-xs font-medium text-on-surface-variant">Activa</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">Ayer, 18:45</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">Tope Gastos Viáticos</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">RRHH</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-surface-container-high rounded uppercase tracking-tighter">Manual</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-block w-2 h-2 rounded-full bg-outline-variant mr-2"></span>
+<span class="text-xs font-medium text-on-surface-variant">Inactiva</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">15 Jul 2023</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer">
+<td class="px-6 py-4 text-sm font-semibold text-on-surface">Detección Duplicados</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">Auditoría</td>
+<td class="px-6 py-4">
+<span class="text-[10px] font-bold px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded uppercase tracking-tighter">Sugerida</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-block w-2 h-2 rounded-full bg-tertiary mr-2"></span>
+<span class="text-xs font-medium text-on-surface-variant">Activa</span>
+</td>
+<td class="px-6 py-4 text-xs text-on-surface-variant">En ejecución</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Side Detail Panel -->
+<aside class="w-96 bg-surface-container-lowest border border-outline-variant/10 p-6 space-y-8 sticky top-24 rounded shadow-sm">
+<div>
+<div class="flex justify-between items-start mb-4">
+<h5 class="text-lg font-bold font-headline leading-tight">Cruce Proveedores A-Z</h5>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="flex gap-2 mb-6">
+<span class="px-2 py-0.5 bg-tertiary-container text-on-tertiary-container text-[10px] font-bold uppercase rounded">Sugerencia aceptada</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase rounded">Logística</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">Esta regla automatiza la vinculación de facturas de fletes con el padrón interno de Alpha SA basado en el CUIT detectado en el escaneo.</p>
+</div>
+<div class="space-y-4">
+<h6 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Configuración Lógica</h6>
+<div class="space-y-3">
+<div class="p-3 bg-surface rounded flex items-center justify-between border border-outline-variant/10">
+<span class="text-xs font-medium">Auto-match (95%)</span>
+<span class="material-symbols-outlined text-tertiary" data-icon="toggle_on" style="font-variation-settings: 'FILL' 1;">toggle_on</span>
+</div>
+<div class="p-3 bg-surface rounded flex items-center justify-between border border-outline-variant/10">
+<span class="text-xs font-medium">Rechazo por CUIT</span>
+<span class="material-symbols-outlined text-on-surface-variant/40" data-icon="toggle_off">toggle_off</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<h6 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Historial de Aplicación</h6>
+<div class="relative pl-4 space-y-4 before:content-[''] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-outline-variant/30">
+<div class="relative">
+<div class="absolute -left-[18.5px] top-1 w-2 h-2 rounded-full bg-primary ring-4 ring-surface-container-lowest"></div>
+<p class="text-[11px] font-bold text-on-surface leading-tight">Regla creada por sistema</p>
+<p class="text-[10px] text-on-surface-variant">12 Oct 2023 - 09:12</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[18.5px] top-1 w-2 h-2 rounded-full bg-outline-variant ring-4 ring-surface-container-lowest"></div>
+<p class="text-[11px] font-bold text-on-surface-variant leading-tight">Sugerencia aceptada por Admin</p>
+<p class="text-[10px] text-on-surface-variant">14 Oct 2023 - 11:30</p>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-surface-container grid grid-cols-2 gap-3">
+<button class="py-2 text-xs font-bold border border-outline-variant/30 text-on-surface-variant hover:bg-surface-container transition-colors rounded">Editar parámetros</button>
+<button class="py-2 text-xs font-bold bg-primary text-on-primary hover:opacity-90 transition-opacity rounded shadow-sm">Aplicar ahora</button>
+</div>
+</aside>
+</div>
+<!-- Footer Help Block -->
+<footer class="mt-12 max-w-5xl">
+<div class="bg-surface-container-low p-6 rounded border border-outline-variant/10 flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary" data-icon="lightbulb">lightbulb</span>
+</div>
+<div class="space-y-1">
+<h6 class="text-sm font-bold text-on-surface font-headline">Asistente Contable</h6>
+<p class="text-xs text-on-surface-variant leading-relaxed max-w-2xl">
+                            Las reglas operativas están diseñadas para reducir el trabajo repetitivo y automatizar la normalización de datos. Recuerde que cada regla requiere una validación inicial antes de aplicarse masivamente al historial del cliente.
+                        </p>
+</div>
+</div>
+</footer>
+</section>
+</main>
+</body></html>

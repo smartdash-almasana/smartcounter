@@ -1,0 +1,93 @@
+{
+  "fecha": "2026-03-28T19:14:27",
+  "pack": [
+    "validation_pack_mvp\\03_encabezado_desplazado_representativo.xlsx",
+    "validation_pack_mvp\\04_semantica_inestable_representativo.xlsx",
+    "validation_pack_mvp\\07_formulas_ocultos_representativo.xlsx",
+    "validation_pack_mvp\\08_montos_mixtos_signos_representativo.csv"
+  ],
+  "resultados": [
+    {
+      "archivo": "03_encabezado_desplazado_representativo.xlsx",
+      "carga_bien": true,
+      "analiza_bien": true,
+      "sheet": "Resumen Clientes",
+      "header_row_1based": 7,
+      "warning_codes": [
+        "header_shifted"
+      ],
+      "mapping_usable": true,
+      "preview_usable": true,
+      "mapping_counts": {
+        "mapped": 3,
+        "ambiguous": 0,
+        "unmapped": 0
+      },
+      "errores": null,
+      "ruido": []
+    },
+    {
+      "archivo": "04_semantica_inestable_representativo.xlsx",
+      "carga_bien": true,
+      "analiza_bien": true,
+      "sheet": "Saldos",
+      "header_row_1based": 1,
+      "warning_codes": [],
+      "mapping_usable": true,
+      "preview_usable": true,
+      "mapping_counts": {
+        "mapped": 2,
+        "ambiguous": 1,
+        "unmapped": 0
+      },
+      "errores": null,
+      "ruido": []
+    },
+    {
+      "archivo": "07_formulas_ocultos_representativo.xlsx",
+      "carga_bien": true,
+      "analiza_bien": true,
+      "sheet": "CXC Mar-26",
+      "header_row_1based": 3,
+      "warning_codes": [
+        "header_shifted",
+        "missing_expected_columns"
+      ],
+      "mapping_usable": true,
+      "preview_usable": true,
+      "mapping_counts": {
+        "mapped": 2,
+        "ambiguous": 0,
+        "unmapped": 0
+      },
+      "errores": null,
+      "ruido": []
+    },
+    {
+      "archivo": "08_montos_mixtos_signos_representativo.csv",
+      "carga_bien": true,
+      "analiza_bien": true,
+      "sheet": "Revisión",
+      "header_row_1based": 1,
+      "warning_codes": [
+        "amount_accounting_sign_parentheses",
+        "amount_currency_ambiguous",
+        "amount_invalid_format",
+        "amount_mixed_separators",
+        "amount_negative_sign_detected",
+        "amount_separator_inferred_thousands",
+        "missing_expected_columns"
+      ],
+      "mapping_usable": true,
+      "preview_usable": true,
+      "mapping_counts": {
+        "mapped": 2,
+        "ambiguous": 0,
+        "unmapped": 0
+      },
+      "errores": null,
+      "ruido": []
+    }
+  ],
+  "hallazgo_entorno": "El flujo UI actual usa tempfile del sistema y en entorno restringido puede fallar por permisos fuera del workspace."
+}

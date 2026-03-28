@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SmartCounter - Detalle de Observación</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed": "#00452d",
+              "error-dim": "#4e0309",
+              "surface-variant": "#d9e4ea",
+              "on-surface": "#2a3439",
+              "on-tertiary-container": "#005a3c",
+              "on-secondary-fixed": "#314055",
+              "on-secondary": "#f7f9ff",
+              "on-error": "#fff7f6",
+              "background": "#f7f9fb",
+              "tertiary-fixed-dim": "#58e7ab",
+              "surface": "#f7f9fb",
+              "inverse-surface": "#0b0f10",
+              "outline": "#717c82",
+              "inverse-primary": "#dae6fe",
+              "on-secondary-container": "#435368",
+              "surface-container-high": "#e1e9ee",
+              "outline-variant": "#a9b4b9",
+              "surface-container-lowest": "#ffffff",
+              "primary": "#545f73",
+              "on-tertiary-fixed-variant": "#006544",
+              "primary-dim": "#485367",
+              "on-background": "#2a3439",
+              "secondary-dim": "#44546a",
+              "tertiary-container": "#69f6b8",
+              "secondary-fixed": "#d3e4fe",
+              "tertiary-dim": "#005f40",
+              "primary-fixed": "#d8e3fb",
+              "on-error-container": "#752121",
+              "error": "#9f403d",
+              "on-primary-fixed-variant": "#515c70",
+              "tertiary-fixed": "#69f6b8",
+              "surface-container-low": "#f0f4f7",
+              "on-primary-container": "#475266",
+              "surface-dim": "#cfdce3",
+              "on-primary-fixed": "#354053",
+              "surface-bright": "#f7f9fb",
+              "primary-container": "#d8e3fb",
+              "on-surface-variant": "#566166",
+              "surface-tint": "#545f73",
+              "on-secondary-fixed-variant": "#4d5d73",
+              "surface-container": "#e8eff3",
+              "secondary-container": "#d3e4fe",
+              "on-tertiary": "#e6ffee",
+              "secondary": "#506076",
+              "primary-fixed-dim": "#cad5ed",
+              "surface-container-highest": "#d9e4ea",
+              "on-primary": "#f6f7ff",
+              "secondary-fixed-dim": "#c5d6f0",
+              "error-container": "#fe8983",
+              "tertiary": "#006d4a",
+              "inverse-on-surface": "#9a9d9f"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, .font-manrope { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased overflow-hidden">
+<!-- Sidebar Navigation Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 bg-slate-100 dark:bg-slate-900 flex flex-col py-6 px-4 z-50">
+<div class="mb-10 px-2">
+<h1 class="text-xl font-bold tracking-tighter text-slate-800 dark:text-slate-100 font-manrope">SmartCounter</h1>
+<p class="text-xs font-medium text-slate-500 uppercase tracking-widest mt-1">Argentum Ledger</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-3 py-2.5 text-slate-900 dark:text-white font-semibold border-r-2 border-slate-700 dark:border-slate-300 bg-white/50 dark:bg-slate-800/50 transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="fact_check">fact_check</span>
+<span class="font-manrope text-sm tracking-tight">Revisiones</span>
+</a>
+<a class="flex items-center px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="groups">groups</span>
+<span class="font-manrope text-sm tracking-tight">Clientes</span>
+</a>
+<a class="flex items-center px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="rule">rule</span>
+<span class="font-manrope text-sm tracking-tight">Reglas</span>
+</a>
+<a class="flex items-center px-3 py-2.5 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="history">history</span>
+<span class="font-manrope text-sm tracking-tight">Historial</span>
+</a>
+</nav>
+<button class="mt-auto flex items-center justify-center gap-2 bg-primary text-on-primary py-3 px-4 rounded font-manrope font-bold text-sm tracking-tight active:scale-95 transition-transform shadow-sm">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+            Nueva Carga
+        </button>
+</aside>
+<!-- Top Navigation Shell -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex justify-between items-center px-8 z-40 border-b border-slate-200/50 dark:border-slate-800/50">
+<div class="flex items-center gap-6">
+<nav class="flex items-center gap-4 text-sm font-manrope">
+<a class="text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-100 transition-opacity" href="#">Resultado curado</a>
+<span class="text-slate-300">/</span>
+<a class="text-slate-900 dark:text-white font-bold border-b-2 border-slate-800 dark:border-slate-200 pb-1" href="#">Observación</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-3">
+<span class="px-2.5 py-1 bg-surface-container text-on-surface-variant text-[10px] font-bold uppercase tracking-wider rounded-sm">Cliente: Alpha SA</span>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-primary-container text-on-primary-container rounded-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="text-xs font-bold font-manrope">Revisión pendiente</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-slate-500 hover:text-slate-800 transition-colors opacity-90 active:scale-95">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-slate-800 transition-colors opacity-90 active:scale-95">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+<img class="h-full w-full object-cover" data-alt="Portrait of a professional accountant in a modern office, clean professional headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAltrPOenNlz3kbTquZGXSgy31PS_A7ghGeiwxbIknIdrBnD8vgxnXuKzszDMk2sQxs9oONPfRAVs7jP_vdhciOIyKXn24055nJw_ZiGNeoVEQB-clxhjNx3yba_YXE6XuH4Bp9eRfsona6xj70sj45zb-FTCrmf_Sd-gdyP3RPhhsR2KpYw5AhptsNT7onwVSCbL2K0ZGxTJ-sLJUIA10ygKrHDClQyU38mzJTl4vIw4f4DFdX_MYqF8ayn5wWceQMcE4PqWl4KnY"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pl-64 pt-16 h-screen overflow-y-auto bg-surface">
+<div class="max-w-[1600px] mx-auto p-12 grid grid-cols-12 gap-12">
+<!-- Left Column: Detailed Content -->
+<div class="col-span-8 space-y-12">
+<!-- 1. Header Metadata & Observation Title -->
+<section class="space-y-6">
+<div class="flex items-start justify-between">
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 text-[11px] font-bold tracking-widest uppercase rounded-sm">ERR-402</span>
+<span class="bg-error text-on-error px-2 py-0.5 text-[11px] font-bold tracking-widest uppercase rounded-sm">Severidad: Crítica</span>
+</div>
+<h2 class="text-4xl font-extrabold font-manrope text-on-surface tracking-tight">CUIL inválido o inexistente en registros</h2>
+</div>
+<div class="text-right">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.15em] mb-1">Metadatos del Archivo</p>
+<div class="flex flex-col items-end gap-1 font-mono text-xs text-on-surface">
+<span>Sueldos_Marzo_2026.xlsx</span>
+<span class="text-on-surface-variant">Período: 03/2026</span>
+</div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low rounded-lg border-l-4 border-error">
+<p class="text-on-surface text-lg font-medium leading-relaxed">
+                            Se detectaron <strong class="font-bold">3 entradas</strong> donde el campo <code class="bg-surface-container-high px-1.5 py-0.5 rounded text-sm">CUIL</code> no cumple con el algoritmo de validación o está vacío. Esto impide la liquidación correcta ante organismos fiscales.
+                        </p>
+</div>
+</section>
+<!-- 2. Evidence Block: Data Samples -->
+<section class="space-y-4">
+<div class="flex items-baseline justify-between">
+<h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-[0.2em] font-manrope">Evidencia de Datos (Affected Rows)</h3>
+<span class="text-[11px] text-on-surface-variant font-medium">Original Label: <span class="font-mono bg-surface-container-low px-1 rounded">CUIL_EMP</span></span>
+</div>
+<div class="bg-surface-container-lowest overflow-hidden">
+<table class="w-full text-left text-sm border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant text-[10px] uppercase tracking-widest">
+<th class="py-3 px-6 font-bold">Legajo</th>
+<th class="py-3 px-6 font-bold">Empleado</th>
+<th class="py-3 px-6 font-bold">CUIL Observado</th>
+<th class="py-3 px-6 font-bold text-right">Estado Fila</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-6 font-mono text-primary-dim">L-1024</td>
+<td class="py-4 px-6 font-medium">Bermúdez, Esteban</td>
+<td class="py-4 px-6 text-error font-bold underline decoration-dotted underline-offset-4">20-00000000-0</td>
+<td class="py-4 px-6 text-right">
+<span class="material-symbols-outlined text-error text-lg" data-icon="report">report</span>
+</td>
+</tr>
+<tr class="bg-surface-container-low/20 hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-6 font-mono text-primary-dim">L-1055</td>
+<td class="py-4 px-6 font-medium">González, María Luz</td>
+<td class="py-4 px-6 text-error font-bold underline decoration-dotted underline-offset-4">20-00000000-0</td>
+<td class="py-4 px-6 text-right">
+<span class="material-symbols-outlined text-error text-lg" data-icon="report">report</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-6 font-mono text-primary-dim">L-2011</td>
+<td class="py-4 px-6 font-medium">Rius, Facundo</td>
+<td class="py-4 px-6 text-error font-bold underline decoration-dotted underline-offset-4">(Campo vacío)</td>
+<td class="py-4 px-6 text-right">
+<span class="material-symbols-outlined text-error text-lg" data-icon="report">report</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- 3. Suggested Interpretation -->
+<section class="space-y-6">
+<h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-[0.2em] font-manrope">Interpretación y Sugerencias</h3>
+<div class="grid grid-cols-3 gap-6">
+<div class="col-span-2 p-8 bg-tertiary-container/30 border-l-4 border-tertiary">
+<span class="text-[10px] font-bold text-on-tertiary-container uppercase tracking-widest mb-2 block">Resolución Primaria Sugerida</span>
+<h4 class="text-2xl font-bold font-manrope text-on-tertiary-fixed-variant mb-4">Validar manualmente en ANSES</h4>
+<p class="text-sm text-on-tertiary-container leading-relaxed mb-4">
+                                El sistema ha identificado una inconsistencia de formato (Type mismatch). Se recomienda la verificación externa de los CUILs afectados para evitar rechazos en la presentación de Declaración Jurada.
+                            </p>
+<div class="flex gap-3">
+<button class="bg-tertiary text-on-tertiary px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-sm hover:opacity-90 transition-opacity">Ejecutar Validación</button>
+<button class="text-tertiary px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-sm border border-tertiary hover:bg-tertiary/5 transition-colors">Editar Valor</button>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 space-y-4">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Otras alternativas</p>
+<div class="space-y-3">
+<button class="w-full text-left p-3 bg-surface-container-lowest hover:bg-white text-xs font-semibold text-on-surface border-b-2 border-transparent hover:border-primary-dim transition-all flex items-center justify-between">
+                                    Omitir registro
+                                    <span class="material-symbols-outlined text-base opacity-40" data-icon="chevron_right">chevron_right</span>
+</button>
+<button class="w-full text-left p-3 bg-surface-container-lowest hover:bg-white text-xs font-semibold text-on-surface border-b-2 border-transparent hover:border-primary-dim transition-all flex items-center justify-between">
+                                    Asignar CUIL genérico
+                                    <span class="material-symbols-outlined text-base opacity-40" data-icon="chevron_right">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Manual Action Block -->
+<section class="flex flex-wrap items-center gap-4 pt-8 border-t border-outline-variant/20">
+<button class="bg-primary text-on-primary px-6 py-3 font-manrope font-bold text-sm tracking-tight flex items-center gap-2 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-lg" data-icon="check_circle">check_circle</span>
+                        Confirmar resolución
+                    </button>
+<button class="bg-surface-container-lowest text-on-surface-variant px-6 py-3 font-manrope font-bold text-sm tracking-tight border-b-2 border-outline-variant hover:border-primary active:scale-95 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="pending">pending</span>
+                        Marcar para revisión manual
+                    </button>
+<button class="text-on-surface-variant px-6 py-3 font-manrope font-bold text-sm tracking-tight hover:text-on-surface transition-colors flex items-center gap-2">
+                        Omitir en esta revisión
+                    </button>
+<button class="ml-auto flex items-center gap-2 text-primary font-manrope font-bold text-sm tracking-tight hover:underline">
+<span class="material-symbols-outlined text-lg" data-icon="auto_fix">auto_fix</span>
+                        Guardar como regla del cliente
+                    </button>
+</section>
+</div>
+<!-- Right Column: Contextual Sidebar -->
+<div class="col-span-4 space-y-8">
+<!-- Impact Summary -->
+<div class="bg-surface-container-low p-8 space-y-6">
+<div class="space-y-1">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] font-manrope">Análisis de Impacto</p>
+<h4 class="text-5xl font-extrabold font-manrope text-on-surface">3 <span class="text-xl font-medium text-on-surface-variant">filas</span></h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">Representa el 2.4% del total de registros de este período.</p>
+</div>
+<div class="space-y-4">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest border-b border-outline-variant/20 pb-2">Observaciones Relacionadas</p>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="mt-1 h-2 w-2 rounded-full bg-error shrink-0"></div>
+<div>
+<p class="text-xs font-bold text-on-surface">Inconsistencia en importes</p>
+<p class="text-[10px] text-on-surface-variant">5 registros asociados a estos legajos presentan diferencias en el cálculo del SAC.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="mt-1 h-2 w-2 rounded-full bg-primary-container shrink-0"></div>
+<div>
+<p class="text-xs font-bold text-on-surface">Diferencia de convenio</p>
+<p class="text-[10px] text-on-surface-variant">Posible mismatch entre CCT declarado y categoría de revista.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-4 space-y-3">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest border-b border-outline-variant/20 pb-2">Límites del Sistema</p>
+<div class="p-4 bg-surface-container-highest/50 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="info">info</span>
+<p class="text-[11px] leading-relaxed text-on-surface-variant">
+                                La validación actual revisa formato y consistencia del dato, pero no consulta padrones oficiales en tiempo real.
+                            </p>
+</div>
+</div>
+</div>
+<!-- Assistant / Documentation -->
+<div class="p-8 border-2 border-dashed border-outline-variant/30 text-center space-y-4">
+<span class="material-symbols-outlined text-4xl text-outline-variant/40" data-icon="help_center">help_center</span>
+<div class="space-y-1">
+<p class="text-xs font-bold text-on-surface">¿Dudas con esta regla?</p>
+<p class="text-[10px] text-on-surface-variant">Consulta el centro de ayuda de Argentum Ledger sobre validaciones fiscales.</p>
+</div>
+<a class="inline-block text-[11px] font-bold text-primary uppercase tracking-widest hover:underline" href="#">Ver Documentación</a>
+</div>
+</div>
+</div>
+</main>
+</body></html>

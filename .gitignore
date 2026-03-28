@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Entorno local SmartCounter
+.smartcounter_tmp/
+.agent/
+revisiones_local.json
+reglas_cliente_local.json
+
+# Node / Playwright
+node_modules/
+playwright-report/
+test-results/
+*.tsbuildinfo
+
+# Logs / temporales
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+Thumbs.db
+.DS_Store
+
+# Archivos de salida temporales de validación
+validation_pack_mvp/resultado_smoke_regresion_mvp.json

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Historial de Revisiones | SmartCounter</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#752121",
+                        "primary-fixed": "#d8e3fb",
+                        "surface-tint": "#545f73",
+                        "error-dim": "#4e0309",
+                        "on-secondary-container": "#435368",
+                        "secondary-dim": "#44546a",
+                        "primary-fixed-dim": "#cad5ed",
+                        "surface-container-high": "#e1e9ee",
+                        "on-error": "#fff7f6",
+                        "on-primary-fixed": "#354053",
+                        "on-primary-container": "#475266",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#506076",
+                        "on-tertiary-fixed-variant": "#006544",
+                        "tertiary-dim": "#005f40",
+                        "surface-container-low": "#f0f4f7",
+                        "on-secondary-fixed": "#314055",
+                        "on-primary-fixed-variant": "#515c70",
+                        "on-surface": "#2a3439",
+                        "tertiary-fixed-dim": "#58e7ab",
+                        "on-secondary": "#f7f9ff",
+                        "primary-container": "#d8e3fb",
+                        "tertiary": "#006d4a",
+                        "on-tertiary-container": "#005a3c",
+                        "surface-bright": "#f7f9fb",
+                        "outline": "#717c82",
+                        "primary-dim": "#485367",
+                        "on-background": "#2a3439",
+                        "primary": "#545f73",
+                        "outline-variant": "#a9b4b9",
+                        "tertiary-container": "#69f6b8",
+                        "on-secondary-fixed-variant": "#4d5d73",
+                        "tertiary-fixed": "#69f6b8",
+                        "secondary-fixed-dim": "#c5d6f0",
+                        "surface-variant": "#d9e4ea",
+                        "on-surface-variant": "#566166",
+                        "on-primary": "#f6f7ff",
+                        "background": "#f7f9fb",
+                        "surface-container-highest": "#d9e4ea",
+                        "inverse-surface": "#0b0f10",
+                        "on-tertiary-fixed": "#00452d",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-tertiary": "#e6ffee",
+                        "surface-container": "#e8eff3",
+                        "inverse-on-surface": "#9a9d9f",
+                        "error": "#9f403d",
+                        "secondary-container": "#d3e4fe",
+                        "surface-dim": "#cfdce3",
+                        "error-container": "#fe8983",
+                        "inverse-primary": "#dae6fe"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+        .font-headline { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- SideNavBar Shell -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r-0 bg-slate-100 dark:bg-slate-900 flex flex-col p-4 gap-y-2 z-50">
+<div class="mb-8 px-2">
+<h1 class="text-lg font-bold tracking-tighter text-slate-800 dark:text-slate-100 uppercase font-headline">SmartCounter</h1>
+<p class="text-xs text-slate-500 font-medium">Argentum Ledger</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-200 rounded-sm font-manrope text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span> Revisionenes
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-200 rounded-sm font-manrope text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span> Clientes
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800/50 transition-colors duration-200 rounded-sm font-manrope text-sm font-medium tracking-tight" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span> Reglas
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-semibold shadow-sm rounded-sm font-manrope text-sm tracking-tight scale-100 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span> Historial
+            </a>
+</nav>
+<div class="mt-auto border-t border-slate-200/50 pt-4 space-y-1">
+<button class="w-full mb-4 py-2 px-4 bg-primary text-on-primary rounded-md font-semibold text-sm hover:opacity-90 transition-opacity">
+                Nueva Revisión
+            </button>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span> Configuración
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span> Ayuda
+            </a>
+</div>
+</aside>
+<!-- TopAppBar Shell -->
+<header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200/20 dark:border-slate-800/20 h-16 flex justify-between items-center px-8">
+<div class="flex items-center gap-8">
+<span class="font-headline text-xl font-black text-slate-900 dark:text-slate-50">Historial de revisiones</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors font-manrope text-base" href="#">Dashboard</a>
+<a class="text-slate-900 dark:text-white border-b-2 border-slate-700 dark:border-slate-300 pb-1 font-manrope text-base" href="#">Reportes Anuales</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden lg:block">
+<input class="bg-surface-container-low border-none rounded-md px-4 py-1.5 text-sm w-64 focus:ring-1 focus:ring-primary focus:bg-surface-container-lowest transition-all" placeholder="Buscar revisiones..." type="text"/>
+<span class="material-symbols-outlined absolute right-3 top-1.5 text-outline text-lg" data-icon="search">search</span>
+</div>
+<button class="text-slate-500 dark:text-slate-400 hover:text-slate-800 relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
+<img alt="Perfil de Contador" class="w-full h-full object-cover" data-alt="retrato profesional de un contador senior con traje gris fondo de oficina minimalista" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuDYsAAjJOP-fWJ7Pwd5lsp0qQfmLx0A2-KjY1EmvkKrC47-42xgff2Cg17NKk5GAYbxQDODeDfPcSFnZ6WkRh1QLJzbKNRw5G6lVD-bTiU8CGg4r_qSrgpF0ou-PGxOQ7SHMbNrZg3tdHP7UXd7oTBuJ6RxnQvN3vqUSp70PNAeo08JoP3yMVHwjH7b-B_Kqhv-AQ_Ljt70yWjIvI8HW3cRWytzhz05EYLUzkBoJTb6K4cuf1sora5XI2M1fK4tuWtynrdEEcSSw"/>
+</div>
+<button class="bg-primary text-on-primary px-4 py-1.5 rounded text-sm font-medium hover:opacity-90 transition-opacity">Cerrar Ejercicio</button>
+</div>
+</header>
+<!-- Main Content Stage -->
+<main class="ml-64 mt-16 p-8 bg-surface min-h-screen">
+<!-- Header Section -->
+<div class="mb-10 flex justify-between items-end">
+<div>
+<h2 class="font-headline text-3xl font-extrabold text-on-surface tracking-tight">Archivo de Auditoría</h2>
+<p class="text-on-surface-variant mt-1 font-body text-sm">Consulta y trazabilidad integral de todos los procesos de revisión ejecutados.</p>
+</div>
+<button class="flex items-center gap-2 text-primary font-semibold hover:bg-primary-container/30 px-4 py-2 rounded-lg transition-colors border border-primary/20">
+<span class="material-symbols-outlined text-lg" data-icon="add">add</span>
+<span>Nueva revisión</span>
+</button>
+</div>
+<!-- Upper Summary Bento -->
+<div class="grid grid-cols-5 gap-6 mb-10">
+<div class="bg-surface-container-lowest p-5 rounded-lg border-b-2 border-primary-container shadow-[0px_4px_12px_rgba(42,52,57,0.03)]">
+<p class="text-label-sm text-on-surface-variant font-medium uppercase tracking-wider mb-2 text-[10px]">Total Revisiones</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-headline font-bold">1,284</span>
+<span class="text-xs text-tertiary font-medium font-body">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-[0px_4px_12px_rgba(42,52,57,0.03)]">
+<p class="text-label-sm text-on-surface-variant font-medium uppercase tracking-wider mb-2 text-[10px]">Pendientes</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-headline font-bold text-secondary">42</span>
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="pending">pending</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-[0px_4px_12px_rgba(42,52,57,0.03)]">
+<p class="text-label-sm text-on-surface-variant font-medium uppercase tracking-wider mb-2 text-[10px]">Completadas</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-headline font-bold text-tertiary">1,190</span>
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-[0px_4px_12px_rgba(42,52,57,0.03)]">
+<p class="text-label-sm text-on-surface-variant font-medium uppercase tracking-wider mb-2 text-[10px]">Con Observaciones</p>
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-headline font-bold text-error">52</span>
+<span class="material-symbols-outlined text-sm text-error" data-icon="warning">warning</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-[0px_4px_12px_rgba(42,52,57,0.03)]">
+<p class="text-label-sm text-on-surface-variant font-medium uppercase tracking-wider mb-2 text-[10px]">Última Actividad</p>
+<p class="text-sm font-headline font-semibold text-primary truncate">Revisión IVA - TechInt</p>
+<p class="text-[10px] text-on-surface-variant font-body">Hace 14 minutos</p>
+</div>
+</div>
+<div class="flex gap-8 items-start">
+<!-- Table Container -->
+<div class="flex-1 space-y-4">
+<!-- Filters Bar -->
+<div class="bg-surface-container-low p-4 rounded-lg flex flex-wrap items-center gap-4">
+<div class="flex-1 min-w-[200px] relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" data-icon="search">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-md pl-10 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary" placeholder="Buscar por archivo o cliente..." type="text"/>
+</div>
+<select class="bg-surface-container-lowest border-none rounded-md py-2 px-4 text-sm font-medium text-on-surface-variant focus:ring-1 focus:ring-primary">
+<option>Cliente: Todos</option>
+<option>Galicia S.A.</option>
+<option>TechInt</option>
+<option>MercadoLibre</option>
+</select>
+<select class="bg-surface-container-lowest border-none rounded-md py-2 px-4 text-sm font-medium text-on-surface-variant focus:ring-1 focus:ring-primary">
+<option>Período: 2024</option>
+<option>Q1 2024</option>
+<option>Q2 2024</option>
+</select>
+<select class="bg-surface-container-lowest border-none rounded-md py-2 px-4 text-sm font-medium text-on-surface-variant focus:ring-1 focus:ring-primary">
+<option>Tipo: Todos</option>
+<option>Asientos Diarios</option>
+<option>IVA Compras</option>
+</select>
+<button class="p-2 hover:bg-surface-container-high rounded transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="filter_list">filter_list</span>
+</button>
+</div>
+<!-- Main Table -->
+<div class="bg-surface-container-lowest rounded-lg overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label">Archivo</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label">Cliente</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label">Período</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label">Estado</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label">Resultado</th>
+<th class="p-4 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant font-label text-right">Fecha</th>
+</tr>
+</thead>
+<tbody class="text-sm font-body">
+<!-- Row 1 (Selected) -->
+<tr class="bg-primary/5 border-l-4 border-primary cursor-pointer transition-colors">
+<td class="p-4 font-semibold text-primary">AUD_Q1_TECHINT_V2.xlsx</td>
+<td class="p-4">TechInt Group</td>
+<td class="p-4">Q1 2024</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-tertiary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completado
+                                    </span>
+</td>
+<td class="p-4">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-tight">Con Observaciones</span>
+</td>
+<td class="p-4 text-right text-on-surface-variant">12 May, 2024</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface border-b border-surface-container-low cursor-pointer transition-colors">
+<td class="p-4 font-semibold">IVA_COMPRAS_GALICIA.csv</td>
+<td class="p-4">Banco Galicia</td>
+<td class="p-4">Abr 2024</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-secondary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Analizado
+                                    </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-tight">Limpio</span>
+</td>
+<td class="p-4 text-right text-on-surface-variant">10 May, 2024</td>
+</tr>
+<!-- Row 3 -->
+<tr class="bg-surface-container-low/20 hover:bg-surface border-b border-surface-container-low cursor-pointer transition-colors">
+<td class="p-4 font-semibold">ASIENTOS_MELI_FINAL.xlsx</td>
+<td class="p-4">MercadoLibre</td>
+<td class="p-4">Ene 2024</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-on-surface-variant font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Revisión Manual
+                                    </span>
+</td>
+<td class="p-4">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-tight">Ambiguo</span>
+</td>
+<td class="p-4 text-right text-on-surface-variant">08 May, 2024</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface border-b border-surface-container-low cursor-pointer transition-colors">
+<td class="p-4 font-semibold">REPORT_ANUAL_23.pdf</td>
+<td class="p-4">Pampa Energía</td>
+<td class="p-4">Anual 2023</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-tertiary font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Completado
+                                    </span>
+</td>
+<td class="p-4">
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-tight">Limpio</span>
+</td>
+<td class="p-4 text-right text-on-surface-variant">05 May, 2024</td>
+</tr>
+<!-- Row 5 -->
+<tr class="bg-surface-container-low/20 hover:bg-surface border-b border-surface-container-low cursor-pointer transition-colors">
+<td class="p-4 font-semibold">REVISION_ADUANA_V1.xls</td>
+<td class="p-4">Arcor S.A.I.C.</td>
+<td class="p-4">Mar 2024</td>
+<td class="p-4">
+<span class="flex items-center gap-1.5 text-error font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span> Pendiente
+                                    </span>
+</td>
+<td class="p-4">
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded-sm text-[10px] font-bold uppercase tracking-tight">Requiere Revisión</span>
+</td>
+<td class="p-4 text-right text-on-surface-variant">Hoy, 09:12</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Bloque de Ayuda -->
+<div class="bg-secondary-container/20 p-6 rounded-lg border-l-4 border-secondary flex gap-4">
+<span class="material-symbols-outlined text-secondary" data-icon="verified_user">verified_user</span>
+<div>
+<h4 class="font-headline font-bold text-secondary text-sm mb-1">Trazabilidad y Revisión Profesional</h4>
+<p class="text-xs text-on-secondary-container leading-relaxed">Cada registro en este historial representa un proceso auditado bajo normas internacionales. El Ledger de SmartCounter asegura que cada modificación o validación manual quede registrada con firma digital, garantizando la integridad de los informes contables presentados.</p>
+</div>
+</div>
+</div>
+<!-- Detail Sidebar (Side Panel) -->
+<aside class="w-96 bg-surface-container-lowest h-fit sticky top-24 rounded-lg shadow-[0px_12px_32px_rgba(42,52,57,0.06)] overflow-hidden">
+<div class="p-6 border-b border-surface-container-low bg-surface-container-low/30">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="description">description</span>
+<button class="text-outline hover:text-on-surface">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<h3 class="font-headline font-bold text-lg text-on-surface">Detalle de Revisión</h3>
+<p class="text-xs text-on-surface-variant">ID: SC-2024-88421</p>
+</div>
+<div class="p-6 space-y-6">
+<!-- File Info -->
+<div>
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Información General</label>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Cliente</span>
+<span class="font-semibold">TechInt Group</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Archivo</span>
+<span class="font-semibold">AUD_Q1_TECHINT_V2.xlsx</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-on-surface-variant">Período</span>
+<span class="font-semibold">Trimestre 1, 2024</span>
+</div>
+</div>
+</div>
+<!-- Audit Metrics -->
+<div>
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Métricas de Auditoría</label>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface p-3 rounded">
+<p class="text-[10px] text-on-surface-variant mb-1">Warnings</p>
+<p class="text-xl font-headline font-bold text-error">12</p>
+</div>
+<div class="bg-surface p-3 rounded">
+<p class="text-[10px] text-on-surface-variant mb-1">Ambiguos</p>
+<p class="text-xl font-headline font-bold text-secondary">08</p>
+</div>
+</div>
+</div>
+<!-- Applied Rules -->
+<div>
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant block mb-2">Reglas Aplicadas (4)</label>
+<ul class="space-y-2">
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 bg-surface rounded">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="done_all" data-weight="fill">done_all</span>
+<span>Validación de CUIT/CUIL</span>
+</li>
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 bg-surface rounded">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="done_all" data-weight="fill">done_all</span>
+<span>Cálculo Alícuota IVA 21%</span>
+</li>
+<li class="flex items-center gap-2 text-xs py-1.5 px-2 bg-surface rounded">
+<span class="material-symbols-outlined text-sm text-error" data-icon="report" data-weight="fill">report</span>
+<span>Detección Correlatividad</span>
+</li>
+</ul>
+</div>
+<div class="pt-4">
+<button class="w-full bg-primary text-on-primary py-3 rounded-md font-bold text-sm shadow-[0px_4px_12px_rgba(84,95,115,0.2)] hover:opacity-90 active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-lg" data-icon="open_in_new">open_in_new</span>
+                            Abrir revisión
+                        </button>
+<button class="w-full mt-2 bg-transparent text-primary py-3 rounded-md font-semibold text-sm hover:bg-primary/5 transition-colors">
+                            Descargar Informe PDF
+                        </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Invisible footer for spacing -->
+<footer class="h-12 bg-surface ml-64"></footer>
+</body></html>

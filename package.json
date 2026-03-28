@@ -1,0 +1,13 @@
+{
+  "name": "smartcounter-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smoke E2E para SmartCounter MVP",
+  "scripts": {
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
+  }
+}
