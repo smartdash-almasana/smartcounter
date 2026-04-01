@@ -521,12 +521,72 @@ def get_revision_job(job_id: str, tenant_id: str):
     except FileNotFoundError:
         result = None
 
+    result = result or {}
+    profile = profile or {}
+
+    artifacts = {
+        "profile_object": profile_object_name,
+        "result_object": result_object_name,
+        "selected_adapter_object": result.get("selected_adapter_object"),
+        "google_adapter_plan_object": result.get("google_adapter_plan_object"),
+        "microsoft_adapter_prompt_object": result.get("microsoft_adapter_prompt_object"),
+        "normalized_preview_object": result.get("normalized_preview_object"),
+        "canonical_export_object": result.get("canonical_export_object"),
+        "adapter_package_object": result.get("adapter_package_object"),
+        "handoff_summary_object": result.get("handoff_summary_object"),
+        "handoff_confirmation_object": result.get("handoff_confirmation_object"),
+        "curated_return_object": result.get("curated_return_object"),
+        "curated_return_validation_object": result.get("curated_return_validation_object"),
+        "final_parse_object": result.get("final_parse_object"),
+        "final_canonical_object": result.get("final_canonical_object"),
+    }
+
     return {
         "ok": True,
         "job_id": job_id,
         "tenant_id": tenant_id,
         "profile": profile,
         "result": result,
+        "job_identity": {
+            "job_id": job_id,
+            "tenant_id": tenant_id,
+            "prefix": prefix,
+        },
+        "source_profile": {
+            "status": profile.get("status"),
+            "source_type": profile.get("source_type"),
+            "original_filename": profile.get("original_filename"),
+            "stored_object": profile.get("stored_object"),
+            "adapter": profile.get("adapter"),
+            "selected_sheet": profile.get("selected_sheet"),
+            "header_row_idx": profile.get("header_row_idx"),
+            "header_values": profile.get("header_values", []),
+            "confidence_score": profile.get("confidence_score"),
+            "issues": profile.get("issues", []),
+            "created_at": profile.get("created_at"),
+            "updated_at": profile.get("updated_at"),
+        },
+        "latest_execution": {
+            "status": result.get("status"),
+            "next_action": result.get("next_action"),
+            "selected_adapter": result.get("selected_adapter"),
+            "curated_return_valid": result.get("curated_return_valid"),
+            "curated_return_filename": result.get("curated_return_filename"),
+            "curated_return_received_at": result.get("curated_return_received_at"),
+            "curated_return_summary": result.get("curated_return_summary"),
+            "final_parse_completed_at": result.get("final_parse_completed_at"),
+            "handoff_confirmed_at": result.get("handoff_confirmed_at"),
+        },
+        "artifacts": artifacts,
+        "status_summary": {
+            "profile_status": profile.get("status"),
+            "result_status": result.get("status"),
+            "next_action": result.get("next_action"),
+            "has_handoff_confirmation": bool(result.get("handoff_confirmation_object")),
+            "has_curated_return": bool(result.get("curated_return_object")),
+            "has_final_parse": bool(result.get("final_parse_object")),
+            "has_final_canonical": bool(result.get("final_canonical_object")),
+        },
     }
 
 
