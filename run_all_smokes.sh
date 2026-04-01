@@ -7,4 +7,5 @@ python smoke_get_revision_job.py
 python smoke_curation_plan.py
 python smoke_select_adapter.py
 python smoke_google_adapter_plan.py
+python smoke_microsoft_adapter_prompt.py
 echo "OK: todos los smokes pasaron"
