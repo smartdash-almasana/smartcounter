@@ -9,6 +9,10 @@ Este bloque quedó validado y congelado.
 - `POST /revision-jobs/{job_id}/curated-return`
 - `POST /revision-jobs/{job_id}/final-parse`
 - `GET /revision-jobs/{job_id}`
+- `POST /revision-jobs/{job_id}/curation-plan`
+- `POST /revision-jobs/{job_id}/select-adapter`
+- `POST /revision-jobs/{job_id}/google-adapter-plan`
+- `POST /revision-jobs/{job_id}/microsoft-adapter-prompt`
 
 ## Comportamiento validado
 
@@ -20,12 +24,16 @@ Caso bueno (`demo.csv`)
 Caso malo (`demo_bad.csv`)
 - `status = curated_return_invalid`
 - `next_action = investigate_curated_return`
+- warnings limpios:
+  - `Fechas inválidas en fecha: 2`
+  - `Filas duplicadas detectadas: 1`
 
 ### final-parse
 Caso bueno después de `demo.csv`
 - `status = final_parse_ready`
 - `next_action = done`
 - `row_count = 1`
+- `warnings = []`
 
 Caso malo después de `demo_bad.csv`
 - `status = final_parse_invalid`
@@ -37,6 +45,14 @@ Caso malo después de `demo_bad.csv`
 - no duplica `fecha_needs_normalization` si ya existe `invalid_fecha`
 - no duplica `fecha_vencimiento_needs_normalization` si ya existe `invalid_fecha_vto`
 - `final_parse(...)` acepta `curated_return_invalid`
+
+## Reglas de cierre confirmadas
+- `confirm-handoff` existe y funciona
+- `confirm-handoff` es idempotente
+- `canonical-export` no pisa `handoff_confirmed`
+- mutaciones post-confirmación bloqueadas con `409`
+- `select-adapter` validado con `409` para job cerrado
+- `ALLOWED_ADAPTERS = {"google", "microsoft"}`
 
 ## Endurecimiento de GET /revision-jobs/{job_id}
 Además de `profile` y `result`, ahora devuelve:
@@ -50,6 +66,10 @@ Además de `profile` y `result`, ahora devuelve:
 - `smoke_test.py`
 - `smoke_job_state.py`
 - `smoke_get_revision_job.py`
+- `smoke_curation_plan.py`
+- `smoke_select_adapter.py`
+- `smoke_google_adapter_plan.py`
+- `smoke_microsoft_adapter_prompt.py`
 
 ## Runner único
 ```bash
