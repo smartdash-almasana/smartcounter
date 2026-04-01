@@ -1081,6 +1081,81 @@ def build_adapter_package(job_id: str, tenant_id: str = Form(...)):
     }
 
 
+def build_auto_curation_payload(job_id: str, tenant_id: str, profile: dict, result: dict):
+    original_object_name = profile["stored_object"]
+
+    loaded = load_dataframe_from_object(original_object_name)
+    df = loaded["dataframe"].copy()
+
+    original_columns = [str(c) for c in df.columns.tolist()]
+    mapped_headers, _ = map_headers(df.columns.tolist())
+    df = df.rename(columns=mapped_headers)
+
+    canonical_columns = ["cliente", "fecha", "fecha_vencimiento", "importe", "estado"]
+
+    for col in canonical_columns:
+        if col not in df.columns:
+            df[col] = None
+
+    changes_applied = []
+    if any(normalize_text(orig) != canon for orig, canon in mapped_headers.items()):
+        changes_applied.append("headers_mapped")
+
+    if "importe" in df.columns:
+        original_importe = df["importe"].copy()
+        df["importe"] = df["importe"].apply(normalize_amount_value)
+        if not original_importe.equals(df["importe"]):
+            changes_applied.append("importe_normalized")
+
+    if "fecha" in df.columns:
+        original_fecha = df["fecha"].copy()
+        df["fecha"] = normalize_date_series(df["fecha"])
+        if not original_fecha.equals(df["fecha"]):
+            changes_applied.append("fecha_normalized")
+
+    if "fecha_vencimiento" in df.columns:
+        original_fecha_vto = df["fecha_vencimiento"].copy()
+        df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
+        if not original_fecha_vto.equals(df["fecha_vencimiento"]):
+            changes_applied.append("fecha_vencimiento_normalized")
+
+    df = df[canonical_columns]
+    df = df.astype(object).where(pd.notnull(df), None)
+
+    preview_rows = df.head(20).to_dict(orient="records")
+    missing_canonical_columns = [c for c in canonical_columns if c not in mapped_headers.values()]
+
+    confidence_score = profile.get("confidence_score")
+    issue_codes = [issue.get("code") for issue in profile.get("issues", []) if issue.get("code")]
+    warnings = [issue.get("message") for issue in profile.get("issues", []) if issue.get("message")]
+
+    next_action = "apply_auto_curation"
+    if result.get("next_action") == "human_review_required":
+        next_action = "guided_curation"
+    elif "missing_core_fields" in issue_codes:
+        next_action = "guided_curation"
+
+    payload = {
+        "job_id": job_id,
+        "tenant_id": tenant_id,
+        "status": "auto_curate_preview_ready",
+        "original_columns": original_columns,
+        "mapped_headers": mapped_headers,
+        "canonical_columns": canonical_columns,
+        "missing_canonical_columns": missing_canonical_columns,
+        "preview_rows": preview_rows,
+        "row_count_preview": len(preview_rows),
+        "issue_codes": issue_codes,
+        "warnings": warnings,
+        "confidence_score": confidence_score,
+        "changes_applied": changes_applied,
+        "next_action": next_action,
+        "generated_at": now_iso(),
+    }
+
+    return payload
+
+
 @app.post("/revision-jobs/{job_id}/normalized-preview")
 def build_normalized_preview(job_id: str, tenant_id: str = Form(...)):
     prefix = f"tenant_{tenant_id}/revision_jobs/{job_id}"
@@ -1100,44 +1175,17 @@ def build_normalized_preview(job_id: str, tenant_id: str = Form(...)):
 
     raise_if_job_confirmed(result)
 
-    original_object_name = profile["stored_object"]
-
     try:
-        loaded = load_dataframe_from_object(original_object_name)
-        df = loaded["dataframe"].copy()
-
-        mapped_headers, _ = map_headers(df.columns.tolist())
-        df = df.rename(columns=mapped_headers)
-
-        canonical_columns = ["cliente", "fecha", "fecha_vencimiento", "importe", "estado"]
-
-        for col in canonical_columns:
-            if col not in df.columns:
-                df[col] = None
-
-        if "importe" in df.columns:
-            df["importe"] = df["importe"].apply(normalize_amount_value)
-
-        if "fecha" in df.columns:
-            df["fecha"] = normalize_date_series(df["fecha"])
-
-        if "fecha_vencimiento" in df.columns:
-            df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
-
-        df = df[canonical_columns]
-        df = df.astype(object).where(pd.notnull(df), None)
-
-        preview_rows = df.head(20).to_dict(orient="records")
-        missing_canonical_columns = [c for c in canonical_columns if c not in mapped_headers.values()]
+        preview = build_auto_curation_payload(job_id, tenant_id, profile, result)
 
         normalized_preview = {
             "job_id": job_id,
             "tenant_id": tenant_id,
             "status": "normalized_preview_ready",
-            "canonical_columns": canonical_columns,
-            "missing_canonical_columns": missing_canonical_columns,
-            "preview_rows": preview_rows,
-            "row_count_preview": len(preview_rows),
+            "canonical_columns": preview["canonical_columns"],
+            "missing_canonical_columns": preview["missing_canonical_columns"],
+            "preview_rows": preview["preview_rows"],
+            "row_count_preview": preview["row_count_preview"],
         }
 
         save_json_to_gcs(normalized_object_name, normalized_preview)
@@ -1151,9 +1199,56 @@ def build_normalized_preview(job_id: str, tenant_id: str = Form(...)):
             "job_id": job_id,
             "tenant_id": tenant_id,
             "status": "normalized_preview_ready",
-            "canonical_columns": canonical_columns,
-            "missing_canonical_columns": missing_canonical_columns,
-            "preview_rows": preview_rows,
+            "canonical_columns": preview["canonical_columns"],
+            "missing_canonical_columns": preview["missing_canonical_columns"],
+            "preview_rows": preview["preview_rows"],
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/revision-jobs/{job_id}/auto-curate-preview")
+def build_auto_curate_preview(job_id: str, tenant_id: str = Form(...)):
+    prefix = f"tenant_{tenant_id}/revision_jobs/{job_id}"
+    profile_object_name = f"{prefix}/profile.json"
+    result_object_name = f"{prefix}/result.json"
+    auto_curate_preview_object_name = f"{prefix}/auto_curate_preview.json"
+
+    try:
+        profile = load_json_from_gcs(profile_object_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="profile.json no encontrado")
+
+    try:
+        result = load_json_from_gcs(result_object_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="result.json no encontrado")
+
+    raise_if_job_confirmed(result)
+
+    try:
+        preview = build_auto_curation_payload(job_id, tenant_id, profile, result)
+        save_json_to_gcs(auto_curate_preview_object_name, preview)
+
+        result["status"] = "auto_curate_preview_ready"
+        result["next_action"] = preview["next_action"]
+        result["auto_curate_preview_object"] = auto_curate_preview_object_name
+        save_json_to_gcs(result_object_name, result)
+
+        return {
+            "ok": True,
+            "job_id": job_id,
+            "tenant_id": tenant_id,
+            "status": "auto_curate_preview_ready",
+            "next_action": preview["next_action"],
+            "canonical_columns": preview["canonical_columns"],
+            "missing_canonical_columns": preview["missing_canonical_columns"],
+            "changes_applied": preview["changes_applied"],
+            "warnings": preview["warnings"],
+            "confidence_score": preview["confidence_score"],
+            "preview_rows": preview["preview_rows"],
+            "auto_curate_preview_object": auto_curate_preview_object_name,
         }
 
     except Exception as e:

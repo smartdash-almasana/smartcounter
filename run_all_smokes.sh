@@ -8,4 +8,5 @@ python smoke_curation_plan.py
 python smoke_select_adapter.py
 python smoke_google_adapter_plan.py
 python smoke_microsoft_adapter_prompt.py
+python smoke_auto_curate_preview.py
 echo "OK: todos los smokes pasaron"
