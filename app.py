@@ -1468,10 +1468,14 @@ def final_parse(job_id: str, tenant_id: str = Form(...)):
 
     allowed_statuses = {
         "curated_return_valid",
-        "curated_return_invalid",
         "final_parse_ready",
         "final_parse_invalid",
     }
+    if result.get("status") == "curated_return_invalid":
+        raise HTTPException(
+            status_code=409,
+            detail="No se puede ejecutar final-parse cuando el curated return es inválido.",
+        )
     if result.get("status") not in allowed_statuses:
         raise HTTPException(
             status_code=409,
