@@ -2,8 +2,7 @@ import json
 import sys
 from urllib import error, request
 
-URL = "http://127.0.0.1:8000/revision-jobs/rev_fcb826458aa6/curation-plan"
-
+BASE_URL = "http://127.0.0.1:8000"
 BOUNDARY = "----SmartCounterCurationPlanBoundary7MA4YWxkTrZu0gW"
 
 
@@ -14,8 +13,11 @@ def fail(msg, payload=None):
     sys.exit(1)
 
 
-def build_body(fields: dict):
+def build_multipart(fields=None, files=None):
+    fields = fields or {}
+    files = files or {}
     lines = []
+
     for name, value in fields.items():
         lines.extend(
             [
@@ -25,6 +27,21 @@ def build_body(fields: dict):
                 str(value),
             ]
         )
+
+    for name, fileinfo in files.items():
+        filename = fileinfo["filename"]
+        content = fileinfo["content"]
+        content_type = fileinfo.get("content_type", "application/octet-stream")
+        lines.extend(
+            [
+                f"--{BOUNDARY}",
+                f'Content-Disposition: form-data; name="{name}"; filename="{filename}"',
+                f"Content-Type: {content_type}",
+                "",
+                content,
+            ]
+        )
+
     lines.append(f"--{BOUNDARY}--")
     lines.append("")
     body = "\r\n".join(lines).encode("utf-8")
@@ -32,27 +49,66 @@ def build_body(fields: dict):
     return body, headers
 
 
-fields = {
-    "tenant_id": "demo001",
-    "adapter_hint": "auto",
-}
+def post_json(url, fields=None, files=None):
+    body, headers = build_multipart(fields=fields, files=files)
+    req = request.Request(url, data=body, headers=headers, method="POST")
+    try:
+        with request.urlopen(req) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except error.URLError as e:
+        fail(f"error de conexión: {e}")
 
-body, headers = build_body(fields)
 
-req = request.Request(URL, data=body, headers=headers, method="POST")
+tenant_id = "demo001"
+csv_content = """empresa,vto,saldo,situacion
+Supermercado Diaz,29/03/2026,$380.000,vencido
+"""
 
-try:
-    with request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-except error.URLError as e:
-    fail(f"error de conexión: {e}")
+create_data = post_json(
+    f"{BASE_URL}/revision-jobs",
+    fields={
+        "tenant_id": tenant_id,
+        "source_type": "excel",
+    },
+    files={
+        "file": {
+            "filename": "demo_curation_plan.csv",
+            "content": csv_content,
+            "content_type": "text/csv",
+        }
+    },
+)
+
+if create_data.get("ok") is not True:
+    fail("create_revision_job ok != true", create_data)
+
+job_id = create_data.get("job_id")
+if not isinstance(job_id, str) or not job_id.startswith("rev_"):
+    fail("job_id inválido al crear job", create_data)
+if job_id == "rev_fcb826458aa6":
+    fail("el smoke no debe usar el job fijo rev_fcb826458aa6", create_data)
+
+profile_data = post_json(
+    f"{BASE_URL}/revision-jobs/{job_id}/profile",
+    fields={"tenant_id": tenant_id},
+)
+if profile_data.get("ok") is not True:
+    fail("profile ok != true", profile_data)
+
+data = post_json(
+    f"{BASE_URL}/revision-jobs/{job_id}/curation-plan",
+    fields={
+        "tenant_id": tenant_id,
+        "adapter_hint": "auto",
+    },
+)
 
 if data.get("ok") is not True:
-    fail("ok != true", data)
+    fail("curation-plan ok != true", data)
 
 checks = [
-    ("job_id", data.get("job_id"), "rev_fcb826458aa6"),
-    ("tenant_id", data.get("tenant_id"), "demo001"),
+    ("job_id", data.get("job_id"), job_id),
+    ("tenant_id", data.get("tenant_id"), tenant_id),
     ("decision", data.get("decision"), "guided_curation"),
     ("recommended_adapter", data.get("recommended_adapter"), "google"),
 ]
@@ -79,6 +135,7 @@ for fragment in required_fragments:
         fail(f"faltó fragmento esperado en instructions: {fragment}", data)
 
 print("OK: curation-plan consistente")
+print(f"job_id={job_id}")
 print(f"decision={data['decision']}")
 print(f"recommended_adapter={data['recommended_adapter']}")
 sys.exit(0)

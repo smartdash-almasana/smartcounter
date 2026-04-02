@@ -89,6 +89,8 @@ if create_data.get("ok") is not True:
 job_id = create_data.get("job_id")
 if not isinstance(job_id, str) or not job_id.startswith("rev_"):
     fail("job_id inválido al crear job", create_data)
+if job_id == "rev_fcb826458aa6":
+    fail("el smoke no debe usar el job fijo rev_fcb826458aa6", create_data)
 
 profile_data = post_json(
     f"{BASE_URL}/revision-jobs/{job_id}/profile",
