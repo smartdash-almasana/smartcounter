@@ -1098,26 +1098,20 @@ def build_auto_curation_payload(job_id: str, tenant_id: str, profile: dict, resu
             df[col] = None
 
     changes_applied = []
-    if any(normalize_text(orig) != canon for orig, canon in mapped_headers.items()):
+    if mapped_headers:
         changes_applied.append("headers_mapped")
 
     if "importe" in df.columns:
-        original_importe = df["importe"].copy()
         df["importe"] = df["importe"].apply(normalize_amount_value)
-        if not original_importe.equals(df["importe"]):
-            changes_applied.append("importe_normalized")
+        changes_applied.append("importe_normalized")
 
     if "fecha" in df.columns:
-        original_fecha = df["fecha"].copy()
         df["fecha"] = normalize_date_series(df["fecha"])
-        if not original_fecha.equals(df["fecha"]):
-            changes_applied.append("fecha_normalized")
+        changes_applied.append("fecha_normalized")
 
     if "fecha_vencimiento" in df.columns:
-        original_fecha_vto = df["fecha_vencimiento"].copy()
         df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
-        if not original_fecha_vto.equals(df["fecha_vencimiento"]):
-            changes_applied.append("fecha_vencimiento_normalized")
+        changes_applied.append("fecha_vencimiento_normalized")
 
     df = df[canonical_columns]
     df = df.astype(object).where(pd.notnull(df), None)
@@ -1253,6 +1247,82 @@ def build_auto_curate_preview(job_id: str, tenant_id: str = Form(...)):
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
+
+@app.post("/revision-jobs/{job_id}/apply-auto-curation")
+def apply_auto_curation(job_id: str, tenant_id: str = Form(...)):
+    prefix = f"tenant_{tenant_id}/revision_jobs/{job_id}"
+    profile_object_name = f"{prefix}/profile.json"
+    result_object_name = f"{prefix}/result.json"
+    normalized_object_name = f"{prefix}/normalized_preview.json"
+    canonical_csv_object_name = f"{prefix}/canonical_export.csv"
+
+    try:
+        load_json_from_gcs(profile_object_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="profile.json no encontrado")
+
+    try:
+        result = load_json_from_gcs(result_object_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="result.json no encontrado")
+
+    raise_if_job_confirmed(result)
+
+    auto_curate_preview_object_name = result.get(
+        "auto_curate_preview_object",
+        f"{prefix}/auto_curate_preview.json",
+    )
+
+    try:
+        preview = load_json_from_gcs(auto_curate_preview_object_name)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="auto_curate_preview.json no encontrado")
+
+    canonical_columns = preview.get("canonical_columns", [])
+    preview_rows = preview.get("preview_rows", [])
+    missing_canonical_columns = preview.get("missing_canonical_columns", [])
+    row_count_preview = preview.get("row_count_preview", len(preview_rows))
+
+    normalized_preview = {
+        "job_id": job_id,
+        "tenant_id": tenant_id,
+        "status": "normalized_preview_ready",
+        "canonical_columns": canonical_columns,
+        "missing_canonical_columns": missing_canonical_columns,
+        "preview_rows": preview_rows,
+        "row_count_preview": row_count_preview,
+    }
+
+    save_json_to_gcs(normalized_object_name, normalized_preview)
+
+    df = pd.DataFrame(preview_rows, columns=canonical_columns)
+    csv_bytes = df.to_csv(index=False).encode("utf-8")
+    bucket.blob(canonical_csv_object_name).upload_from_string(
+        csv_bytes,
+        content_type="text/csv",
+    )
+
+    result["status"] = "auto_curation_applied"
+    result["next_action"] = "ready_for_final_parse"
+    result["normalized_preview_object"] = normalized_object_name
+    result["canonical_export_object"] = canonical_csv_object_name
+    result["auto_curate_preview_object"] = auto_curate_preview_object_name
+    save_json_to_gcs(result_object_name, result)
+
+    return {
+        "ok": True,
+        "job_id": job_id,
+        "tenant_id": tenant_id,
+        "status": "auto_curation_applied",
+        "next_action": "ready_for_final_parse",
+        "normalized_preview_object": normalized_object_name,
+        "canonical_export_object": canonical_csv_object_name,
+        "row_count": len(preview_rows),
+        "canonical_columns": canonical_columns,
+    }
 
 
 @app.post("/revision-jobs/{job_id}/confirm-handoff")
