@@ -13,4 +13,5 @@ PYTHON_BIN="${PYTHON_BIN:-./.venv/bin/python}"
 "$PYTHON_BIN" smoke_pdf_text_real.py
 "$PYTHON_BIN" smoke_auto_curate_preview.py
 "$PYTHON_BIN" smoke_apply_auto_curation.py
+"$PYTHON_BIN" smoke_curated_final_parse_pack08.py
 echo "OK: todos los smokes pasaron"
