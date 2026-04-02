@@ -1116,6 +1116,94 @@ def build_canonical_export(job_id: str, tenant_id: str = Form(...)):
     }
 
 
+def canonicalize_curated_return_object(curated_return_object: str):
+    loaded = load_dataframe_from_object(bucket, curated_return_object)
+    raw_df = loaded["dataframe"].copy()
+
+    mapped_headers, unknown_headers = map_headers(raw_df.columns.tolist())
+    recognized_fields = sorted(set(mapped_headers.values()))
+
+    df = raw_df.rename(columns=mapped_headers).copy()
+    canonical_columns = ["cliente", "fecha", "fecha_vencimiento", "importe", "estado"]
+
+    for col in canonical_columns:
+        if col not in df.columns:
+            df[col] = None
+
+    original_importe_series = (
+        df["importe"].copy()
+        if "importe" in df.columns
+        else pd.Series([None] * len(df), index=df.index)
+    )
+    original_fecha_series = (
+        df["fecha"].copy()
+        if "fecha" in df.columns
+        else pd.Series([None] * len(df), index=df.index)
+    )
+    original_fecha_vto_series = (
+        df["fecha_vencimiento"].copy()
+        if "fecha_vencimiento" in df.columns
+        else pd.Series([None] * len(df), index=df.index)
+    )
+
+    if "importe" in df.columns:
+        df["importe"] = df["importe"].apply(normalize_amount_value)
+
+    if "fecha" in df.columns:
+        df["fecha"] = normalize_date_series(df["fecha"])
+
+    if "fecha_vencimiento" in df.columns:
+        df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
+
+    df = df[canonical_columns]
+    df = df.astype(object).where(pd.notnull(df), None)
+
+    row_count = len(df)
+    duplicate_row_count_raw = int(raw_df.duplicated().sum()) if len(raw_df) > 0 else 0
+    duplicate_row_count = int(df.duplicated().sum()) if row_count > 0 else 0
+
+    null_cliente_count = int(df["cliente"].isna().sum()) if "cliente" in df.columns else row_count
+    null_importe_count = int(df["importe"].isna().sum()) if "importe" in df.columns else row_count
+
+    invalid_importe_count = 0
+    if len(original_importe_series) > 0:
+        invalid_importe_count = int(
+            (original_importe_series.notna() & pd.Series(df["importe"], index=df.index).isna()).sum()
+        )
+
+    invalid_fecha_count = 0
+    if len(original_fecha_series) > 0:
+        invalid_fecha_count = int(
+            (original_fecha_series.notna() & pd.Series(df["fecha"], index=df.index).isna()).sum()
+        )
+
+    invalid_fecha_vencimiento_count = 0
+    if len(original_fecha_vto_series) > 0:
+        invalid_fecha_vencimiento_count = int(
+            (
+                original_fecha_vto_series.notna()
+                & pd.Series(df["fecha_vencimiento"], index=df.index).isna()
+            ).sum()
+        )
+
+    return {
+        "raw_df": raw_df,
+        "df_canonical": df,
+        "canonical_columns": canonical_columns,
+        "mapped_headers": mapped_headers,
+        "recognized_fields": recognized_fields,
+        "unknown_headers": unknown_headers,
+        "row_count": row_count,
+        "duplicate_row_count_raw": duplicate_row_count_raw,
+        "duplicate_row_count": duplicate_row_count,
+        "invalid_fecha_count": invalid_fecha_count,
+        "invalid_fecha_vencimiento_count": invalid_fecha_vencimiento_count,
+        "invalid_importe_count": invalid_importe_count,
+        "null_cliente_count": null_cliente_count,
+        "null_importe_count": null_importe_count,
+    }
+
+
 @app.post("/revision-jobs/{job_id}/curated-return")
 async def submit_curated_return(
     job_id: str,
@@ -1159,8 +1247,8 @@ async def submit_curated_return(
     blob.upload_from_string(content, content_type=file.content_type or "application/octet-stream")
 
     try:
-        loaded = load_dataframe_from_object(bucket, curated_return_object_name)
-        raw_df = loaded["dataframe"].copy()
+        canonicalized = canonicalize_curated_return_object(curated_return_object_name)
+        raw_df = canonicalized["raw_df"]
         analysis = profile_dataframe(raw_df)
     except Exception as e:
         validation = {
@@ -1179,10 +1267,8 @@ async def submit_curated_return(
         analysis = None
 
     if raw_df is not None:
-        mapped_headers = analysis.get("mapped_headers", {})
-        recognized_fields = analysis.get("recognized_fields", [])
-
-        df = raw_df.rename(columns=mapped_headers).copy()
+        mapped_headers = canonicalized["mapped_headers"]
+        recognized_fields = canonicalized["recognized_fields"]
 
         required_core = {"cliente", "importe"}
         recognized_core = set(recognized_fields)
@@ -1194,40 +1280,9 @@ async def submit_curated_return(
             warning_map["missing_core"] = (
                 f"Columnas canónicas mínimas faltantes: {', '.join(missing)}"
             )
-
-        original_fecha_series = (
-            df["fecha"].copy()
-            if "fecha" in df.columns
-            else pd.Series([None] * len(df), index=df.index)
-        )
-        original_fecha_vto_series = (
-            df["fecha_vencimiento"].copy()
-            if "fecha_vencimiento" in df.columns
-            else pd.Series([None] * len(df), index=df.index)
-        )
-
-        if "fecha" in df.columns:
-            df["fecha"] = normalize_date_series(df["fecha"])
-
-        if "fecha_vencimiento" in df.columns:
-            df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
-
-        invalid_fecha_count = 0
-        if "fecha" in df.columns and len(df) > 0:
-            invalid_fecha_count = int(
-                (original_fecha_series.notna() & pd.Series(df["fecha"], index=df.index).isna()).sum()
-            )
-
-        invalid_fecha_vencimiento_count = 0
-        if "fecha_vencimiento" in df.columns and len(df) > 0:
-            invalid_fecha_vencimiento_count = int(
-                (
-                    original_fecha_vto_series.notna()
-                    & pd.Series(df["fecha_vencimiento"], index=df.index).isna()
-                ).sum()
-            )
-
-        duplicate_row_count = int(raw_df.duplicated().sum()) if len(raw_df) > 0 else 0
+        invalid_fecha_count = canonicalized["invalid_fecha_count"]
+        invalid_fecha_vencimiento_count = canonicalized["invalid_fecha_vencimiento_count"]
+        duplicate_row_count = canonicalized["duplicate_row_count_raw"]
 
         if invalid_fecha_count > 0:
             warning_map["invalid_fecha"] = f"Fechas inválidas en fecha: {invalid_fecha_count}"
@@ -1360,82 +1415,23 @@ def final_parse(job_id: str, tenant_id: str = Form(...)):
         )
 
     try:
-        loaded = load_dataframe_from_object(bucket, curated_return_object)
-        raw_df = loaded["dataframe"].copy()
+        canonicalized = canonicalize_curated_return_object(curated_return_object)
     except Exception as e:
         raise HTTPException(
             status_code=400,
             detail=f"No se pudo cargar curated return: {str(e)}",
         )
 
-    mapped_headers, unknown_headers = map_headers(raw_df.columns.tolist())
-    df = raw_df.rename(columns=mapped_headers).copy()
-
-    canonical_columns = ["cliente", "fecha", "fecha_vencimiento", "importe", "estado"]
-
-    for col in canonical_columns:
-        if col not in df.columns:
-            df[col] = None
-
-    original_importe_series = (
-        df["importe"].copy()
-        if "importe" in df.columns
-        else pd.Series([None] * len(df), index=df.index)
-    )
-    original_fecha_series = (
-        df["fecha"].copy()
-        if "fecha" in df.columns
-        else pd.Series([None] * len(df), index=df.index)
-    )
-    original_fecha_vto_series = (
-        df["fecha_vencimiento"].copy()
-        if "fecha_vencimiento" in df.columns
-        else pd.Series([None] * len(df), index=df.index)
-    )
-
-    if "importe" in df.columns:
-        df["importe"] = df["importe"].apply(normalize_amount_value)
-
-    if "fecha" in df.columns:
-        df["fecha"] = normalize_date_series(df["fecha"])
-
-    if "fecha_vencimiento" in df.columns:
-        df["fecha_vencimiento"] = normalize_date_series(df["fecha_vencimiento"])
-
-    df = df[canonical_columns]
-    df = df.astype(object).where(pd.notnull(df), None)
-
-    row_count = len(df)
-
-    null_cliente_count = int(df["cliente"].isna().sum()) if "cliente" in df.columns else row_count
-    null_importe_count = int(df["importe"].isna().sum()) if "importe" in df.columns else row_count
-
-    original_importe_non_null = int(original_importe_series.notna().sum()) if len(original_importe_series) else 0
-    original_fecha_non_null = int(original_fecha_series.notna().sum()) if len(original_fecha_series) else 0
-    original_fecha_vto_non_null = int(original_fecha_vto_series.notna().sum()) if len(original_fecha_vto_series) else 0
-
-    invalid_importe_count = max(0, null_importe_count)
-    if original_importe_non_null > 0:
-        invalid_importe_count = int(
-            ((original_importe_series.notna()) & (df["importe"].isna())).sum()
-        )
-
-    invalid_fecha_count = 0
-    if original_fecha_non_null > 0:
-        invalid_fecha_count = int(
-            ((original_fecha_series.notna()) & (pd.Series(df["fecha"], index=df.index).isna())).sum()
-        )
-
-    invalid_fecha_vencimiento_count = 0
-    if original_fecha_vto_non_null > 0:
-        invalid_fecha_vencimiento_count = int(
-            (
-                (original_fecha_vto_series.notna())
-                & (pd.Series(df["fecha_vencimiento"], index=df.index).isna())
-            ).sum()
-        )
-
-    duplicate_row_count = int(df.duplicated().sum()) if row_count > 0 else 0
+    df = canonicalized["df_canonical"]
+    canonical_columns = canonicalized["canonical_columns"]
+    unknown_headers = canonicalized["unknown_headers"]
+    row_count = canonicalized["row_count"]
+    null_cliente_count = canonicalized["null_cliente_count"]
+    null_importe_count = canonicalized["null_importe_count"]
+    invalid_importe_count = canonicalized["invalid_importe_count"]
+    invalid_fecha_count = canonicalized["invalid_fecha_count"]
+    invalid_fecha_vencimiento_count = canonicalized["invalid_fecha_vencimiento_count"]
+    duplicate_row_count = canonicalized["duplicate_row_count"]
 
     warnings = []
     if unknown_headers:
