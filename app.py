@@ -1146,8 +1146,33 @@ def canonicalize_curated_return_object(curated_return_object: str):
         else pd.Series([None] * len(df), index=df.index)
     )
 
+    def _normalize_importe_curated(value):
+        if pd.isna(value):
+            return None
+
+        s = str(value).strip()
+        if not s:
+            return None
+
+        is_paren_negative = s.startswith("(") and s.endswith(")")
+        if is_paren_negative:
+            s = s[1:-1].strip()
+
+        s = (
+            s.replace("US$", "")
+            .replace("U$S", "")
+            .replace("USD", "")
+            .replace("usd", "")
+            .strip()
+        )
+
+        normalized = normalize_amount_value(s)
+        if is_paren_negative and isinstance(normalized, (int, float)):
+            return -abs(normalized)
+        return normalized
+
     if "importe" in df.columns:
-        df["importe"] = df["importe"].apply(normalize_amount_value)
+        df["importe"] = df["importe"].apply(_normalize_importe_curated)
 
     if "fecha" in df.columns:
         df["fecha"] = normalize_date_series(df["fecha"])
