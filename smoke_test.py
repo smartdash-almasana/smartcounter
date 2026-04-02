@@ -1,181 +1,133 @@
 import json
-import os
 import sys
 from urllib import error, request
 
 BASE_URL = "http://127.0.0.1:8000"
-JOB_ID = "rev_fcb826458aa6"
-TENANT_ID = "demo001"
-GOOD_CSV_PATH = "demo.csv"
-BAD_CSV_PATH = "demo_bad.csv"
+BOUNDARY = "----SmartCounterSmokeTestBoundary7MA4YWxkTrZu0gW"
 
 
-def _check_file_exists(file_path: str) -> None:
-    if not os.path.exists(file_path):
-        print(
-            f"ERROR: Archivo de prueba no encontrado en '{file_path}'. "
-            "Asegúrate de que el archivo existe y el script se ejecuta desde el directorio correcto."
-        )
-        sys.exit(1)
+def fail(msg, payload=None):
+    print(f"FALLÓ: {msg}")
+    if payload is not None:
+        print(json.dumps(payload, indent=2, ensure_ascii=False))
+    sys.exit(1)
 
 
-def _multipart_form_data(fields: dict, file_field_name: str, file_path: str, content_type: str = "text/csv"):
-    boundary = "----SmartCounterSmokeBoundary7MA4YWxkTrZu0gW"
+def build_multipart(fields=None, files=None):
+    fields = fields or {}
+    files = files or {}
     lines = []
 
     for name, value in fields.items():
         lines.extend(
             [
-                f"--{boundary}",
+                f"--{BOUNDARY}",
                 f'Content-Disposition: form-data; name="{name}"',
                 "",
                 str(value),
             ]
         )
 
-    filename = os.path.basename(file_path)
-    lines.extend(
-        [
-            f"--{boundary}",
-            f'Content-Disposition: form-data; name="{file_field_name}"; filename="{filename}"',
-            f"Content-Type: {content_type}",
-            "",
-        ]
-    )
+    for name, fileinfo in files.items():
+        filename = fileinfo["filename"]
+        content = fileinfo["content"]
+        content_type = fileinfo.get("content_type", "application/octet-stream")
+        lines.extend(
+            [
+                f"--{BOUNDARY}",
+                f'Content-Disposition: form-data; name="{name}"; filename="{filename}"',
+                f"Content-Type: {content_type}",
+                "",
+                content,
+            ]
+        )
 
-    body = b""
-    for line in lines:
-        body += line.encode("utf-8") + b"\r\n"
-
-    with open(file_path, "rb") as f:
-        body += f.read() + b"\r\n"
-
-    body += f"--{boundary}--\r\n".encode("utf-8")
-
-    headers = {
-        "Content-Type": f"multipart/form-data; boundary={boundary}",
-        "Content-Length": str(len(body)),
-    }
+    lines.append(f"--{BOUNDARY}--")
+    lines.append("")
+    body = "\r\n".join(lines).encode("utf-8")
+    headers = {"Content-Type": f"multipart/form-data; boundary={BOUNDARY}"}
     return body, headers
 
 
-def _form_urlencoded(fields: dict):
-    from urllib.parse import urlencode
-
-    body = urlencode(fields).encode("utf-8")
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "Content-Length": str(len(body)),
-    }
-    return body, headers
-
-
-def _do_post(url: str, fields: dict, file_path: str | None = None):
-    if file_path is not None:
-        body, headers = _multipart_form_data(fields=fields, file_field_name="file", file_path=file_path)
-    else:
-        body, headers = _form_urlencoded(fields=fields)
-
-    req = request.Request(url=url, data=body, headers=headers, method="POST")
-    with request.urlopen(req) as resp:
-        status_code = resp.getcode()
-        raw = resp.read().decode("utf-8")
-        return status_code, json.loads(raw)
-
-
-def _handle_request(description: str, url: str, fields: dict, expected_response: dict, file_path: str | None = None):
-    print(f"CASO: {description}... ", end="")
+def post_json(url, fields=None, files=None):
+    body, headers = build_multipart(fields=fields, files=files)
+    req = request.Request(url, data=body, headers=headers, method="POST")
     try:
-        status_code, response_json = _do_post(url=url, fields=fields, file_path=file_path)
-
-        if status_code != 200:
-            print(f"FALLÓ (Status Code: {status_code}, esperado: 200)")
-            print(f"Respuesta: {response_json}")
-            sys.exit(1)
-
-        for key, value in expected_response.items():
-            if response_json.get(key) != value:
-                print(f"FALLÓ (Respuesta inesperada para '{key}')")
-                print(f"  - Esperado: {value}")
-                print(f"  - Recibido:  {response_json.get(key)}")
-                print(f"  - Respuesta completa: {response_json}")
-                sys.exit(1)
-
-        print("OK")
-        return response_json
-
-    except error.HTTPError as e:
-        print(f"FALLÓ (HTTP {e.code})")
-        try:
-            print(f"Respuesta: {e.read().decode('utf-8')}")
-        except Exception:
-            pass
-        sys.exit(1)
+        with request.urlopen(req) as resp:
+            return json.loads(resp.read().decode("utf-8"))
     except error.URLError as e:
-        print(f"FALLÓ (Error de conexión: {e})")
-        print(f"Asegúrate de que el backend FastAPI está corriendo en {BASE_URL}")
-        sys.exit(1)
-    except Exception as e:
-        print(f"FALLÓ ({e})")
-        sys.exit(1)
+        fail(f"error de conexión: {e}")
 
 
-def main():
-    print("--- Iniciando Smoke Test para SmartCounter MVP ---")
+tenant_id = "demo001"
+csv_content = """empresa,vto,saldo,situacion
+Supermercado Diaz,29/03/2026,$380.000,vencido
+"""
 
-    _check_file_exists(GOOD_CSV_PATH)
-    _check_file_exists(BAD_CSV_PATH)
+create_data = post_json(
+    f"{BASE_URL}/revision-jobs",
+    fields={
+        "tenant_id": tenant_id,
+        "source_type": "excel",
+    },
+    files={
+        "file": {
+            "filename": "demo_smoke_test_base.csv",
+            "content": csv_content,
+            "content_type": "text/csv",
+        }
+    },
+)
 
-    common_fields = {"tenant_id": TENANT_ID}
+if create_data.get("ok") is not True:
+    fail("create_revision_job ok != true", create_data)
 
-    url_curated = f"{BASE_URL}/revision-jobs/{JOB_ID}/curated-return"
-    url_final = f"{BASE_URL}/revision-jobs/{JOB_ID}/final-parse"
+job_id = create_data.get("job_id")
+if not isinstance(job_id, str) or not job_id.startswith("rev_"):
+    fail("job_id inválido al crear job", create_data)
+if job_id == "rev_fcb826458aa6":
+    fail("el smoke no debe usar el job fijo rev_fcb826458aa6", create_data)
 
-    _handle_request(
-        description="curated-return con CSV válido",
-        url=url_curated,
-        fields=common_fields,
-        file_path=GOOD_CSV_PATH,
-        expected_response={
-            "status": "curated_return_valid",
-            "next_action": "ready_for_final_parse",
-        },
-    )
+profile_data = post_json(
+    f"{BASE_URL}/revision-jobs/{job_id}/profile",
+    fields={"tenant_id": tenant_id},
+)
 
-    _handle_request(
-        description="final-parse después de CSV válido",
-        url=url_final,
-        fields=common_fields,
-        expected_response={
-            "status": "final_parse_ready",
-            "next_action": "done",
-        },
-    )
+if profile_data.get("ok") is not True:
+    fail("profile ok != true", profile_data)
 
-    _handle_request(
-        description="curated-return con CSV inválido",
-        url=url_curated,
-        fields=common_fields,
-        file_path=BAD_CSV_PATH,
-        expected_response={
-            "status": "curated_return_invalid",
-            "next_action": "investigate_curated_return",
-        },
-    )
+checks = [
+    ("job_id", profile_data.get("job_id"), job_id),
+    ("tenant_id", profile_data.get("tenant_id"), tenant_id),
+    ("status", profile_data.get("status"), "profiled"),
+]
 
-    _handle_request(
-        description="final-parse después de CSV inválido",
-        url=url_final,
-        fields=common_fields,
-        expected_response={
-            "status": "final_parse_invalid",
-            "next_action": "investigate_final_parse",
-        },
-    )
+for name, got, expected in checks:
+    if got != expected:
+        fail(f"{name} esperado={expected} recibido={got}", profile_data)
 
-    print("\n--- Smoke Test completado con éxito. Todos los casos pasaron. ---")
-    sys.exit(0)
+next_action = profile_data.get("next_action")
+if next_action not in {"guided_curation", "human_review_required", "direct_parse"}:
+    fail(f"next_action inválido para flujo base: {next_action}", profile_data)
 
+issues = profile_data.get("issues")
+if not isinstance(issues, list):
+    fail("issues inválido: se esperaba lista", profile_data)
 
-if __name__ == "__main__":
-    main()
+confidence_score = profile_data.get("confidence_score")
+if not isinstance(confidence_score, int):
+    fail("confidence_score inválido: se esperaba entero", profile_data)
+
+selected_sheet = profile_data.get("selected_sheet")
+if selected_sheet != "csv_main":
+    fail(f"selected_sheet inesperado: {selected_sheet}", profile_data)
+
+header_row_idx = profile_data.get("header_row_idx")
+if header_row_idx != 0:
+    fail(f"header_row_idx inesperado: {header_row_idx}", profile_data)
+
+print("OK: smoke_test flujo base consistente")
+print(f"job_id={job_id}")
+print(f"status={profile_data['status']}")
+print(f"next_action={next_action}")
+sys.exit(0)

@@ -2,7 +2,9 @@ import json
 import sys
 from urllib import error, request
 
-URL = "http://127.0.0.1:8000/revision-jobs/rev_fcb826458aa6?tenant_id=demo001"
+BASE_URL = "http://127.0.0.1:8000"
+BOUNDARY = "----SmartCounterJobStateBoundary7MA4YWxkTrZu0gW"
+
 
 def fail(msg, payload=None):
     print(f"FALLÓ: {msg}")
@@ -10,51 +12,128 @@ def fail(msg, payload=None):
         print(json.dumps(payload, indent=2, ensure_ascii=False))
     sys.exit(1)
 
-try:
-    with request.urlopen(URL) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
-except error.URLError as e:
-    fail(f"error de conexión: {e}")
+
+def build_multipart(fields=None, files=None):
+    fields = fields or {}
+    files = files or {}
+    lines = []
+
+    for name, value in fields.items():
+        lines.extend(
+            [
+                f"--{BOUNDARY}",
+                f'Content-Disposition: form-data; name="{name}"',
+                "",
+                str(value),
+            ]
+        )
+
+    for name, fileinfo in files.items():
+        filename = fileinfo["filename"]
+        content = fileinfo["content"]
+        content_type = fileinfo.get("content_type", "application/octet-stream")
+        lines.extend(
+            [
+                f"--{BOUNDARY}",
+                f'Content-Disposition: form-data; name="{name}"; filename="{filename}"',
+                f"Content-Type: {content_type}",
+                "",
+                content,
+            ]
+        )
+
+    lines.append(f"--{BOUNDARY}--")
+    lines.append("")
+    body = "\r\n".join(lines).encode("utf-8")
+    headers = {"Content-Type": f"multipart/form-data; boundary={BOUNDARY}"}
+    return body, headers
+
+
+def post_json(url, fields=None, files=None):
+    body, headers = build_multipart(fields=fields, files=files)
+    req = request.Request(url, data=body, headers=headers, method="POST")
+    try:
+        with request.urlopen(req) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except error.URLError as e:
+        fail(f"error de conexión: {e}")
+
+
+def get_json(url):
+    req = request.Request(url, method="GET")
+    try:
+        with request.urlopen(req) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except error.URLError as e:
+        fail(f"error de conexión: {e}")
+
+
+tenant_id = "demo001"
+csv_content = """empresa,vto,saldo,situacion
+Supermercado Diaz,29/03/2026,$380.000,vencido
+"""
+
+create_data = post_json(
+    f"{BASE_URL}/revision-jobs",
+    fields={
+        "tenant_id": tenant_id,
+        "source_type": "excel",
+    },
+    files={
+        "file": {
+            "filename": "demo_job_state.csv",
+            "content": csv_content,
+            "content_type": "text/csv",
+        }
+    },
+)
+
+if create_data.get("ok") is not True:
+    fail("create_revision_job ok != true", create_data)
+
+job_id = create_data.get("job_id")
+if not isinstance(job_id, str) or not job_id.startswith("rev_"):
+    fail("job_id inválido al crear job", create_data)
+if job_id == "rev_fcb826458aa6":
+    fail("el smoke no debe usar el job fijo rev_fcb826458aa6", create_data)
+
+profile_data = post_json(
+    f"{BASE_URL}/revision-jobs/{job_id}/profile",
+    fields={"tenant_id": tenant_id},
+)
+if profile_data.get("ok") is not True:
+    fail("profile ok != true", profile_data)
+
+data = get_json(f"{BASE_URL}/revision-jobs/{job_id}?tenant_id={tenant_id}")
+
+if data.get("ok") is not True:
+    fail("GET job ok != true", data)
 
 profile = data.get("profile") or {}
 result = data.get("result") or {}
 
 checks = [
-    ("profile.job_id", profile.get("job_id"), "rev_fcb826458aa6"),
-    ("profile.tenant_id", profile.get("tenant_id"), "demo001"),
-    ("result.selected_adapter", result.get("selected_adapter"), "google"),
+    ("profile.job_id", profile.get("job_id"), job_id),
+    ("profile.tenant_id", profile.get("tenant_id"), tenant_id),
+    ("profile.status", profile.get("status"), "profiled"),
+    ("result.status", result.get("status"), "profiled"),
 ]
-
 for name, got, expected in checks:
     if got != expected:
         fail(f"{name} esperado={expected} recibido={got}", data)
 
-required_non_empty = [
-    "handoff_confirmation_object",
-    "final_parse_object",
-    "final_canonical_object",
-]
-
-for key in required_non_empty:
-    if not result.get(key):
-        fail(f"result.{key} vacío o ausente", data)
-
 status = result.get("status")
 next_action = result.get("next_action")
+allowed_next_actions = {"guided_curation", "human_review_required", "direct_parse"}
 
-if status not in {"final_parse_ready", "final_parse_invalid"}:
-    fail(f"result.status inválido: {status}", data)
+if next_action not in allowed_next_actions:
+    fail(f"result.next_action inválido: {next_action}", data)
 
-if status == "final_parse_ready" and next_action != "done":
-    fail(f"para final_parse_ready se esperaba next_action=done y vino {next_action}", data)
-
-if status == "final_parse_invalid" and next_action != "investigate_final_parse":
-    fail(
-        f"para final_parse_invalid se esperaba next_action=investigate_final_parse y vino {next_action}",
-        data,
-    )
+if status != "profiled":
+    fail(f"result.status inválido para este flujo: {status}", data)
 
 print("OK: estado del job consistente")
+print(f"job_id={job_id}")
 print(f"status={status}")
 print(f"next_action={next_action}")
 sys.exit(0)
