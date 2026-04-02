@@ -1167,9 +1167,11 @@ def canonicalize_curated_return_object(curated_return_object: str):
         )
 
         normalized = normalize_amount_value(s)
-        if is_paren_negative and isinstance(normalized, (int, float)):
-            return -abs(normalized)
-        return normalized
+        if isinstance(normalized, (int, float)):
+            if is_paren_negative:
+                return -abs(normalized)
+            return normalized
+        return None
 
     if "importe" in df.columns:
         df["importe"] = df["importe"].apply(_normalize_importe_curated)
