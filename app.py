@@ -1320,6 +1320,7 @@ async def submit_curated_return(
             "column_count": 0,
             "file_hash": file_hash,
             "duplicate_row_count": 0,
+            "invalid_importe_count": 0,
             "invalid_fecha_count": 0,
             "invalid_fecha_vencimiento_count": 0,
         }
@@ -1343,6 +1344,7 @@ async def submit_curated_return(
 
         invalid_fecha_count = canonicalized["invalid_fecha_count"]
         invalid_fecha_vencimiento_count = canonicalized["invalid_fecha_vencimiento_count"]
+        invalid_importe_count = canonicalized["invalid_importe_count"]
         duplicate_row_count = canonicalized["duplicate_row_count_raw"]
 
         if invalid_fecha_count > 0:
@@ -1351,6 +1353,11 @@ async def submit_curated_return(
         if invalid_fecha_vencimiento_count > 0:
             warning_map["invalid_fecha_vto"] = (
                 f"Fechas inválidas en fecha_vencimiento: {invalid_fecha_vencimiento_count}"
+            )
+
+        if invalid_importe_count > 0:
+            warning_map["invalid_importe"] = (
+                f"Importes no numéricos o no normalizables: {invalid_importe_count}"
             )
 
         if duplicate_row_count > 0:
@@ -1382,6 +1389,7 @@ async def submit_curated_return(
 
         valid = (
             required_core.issubset(recognized_core)
+            and invalid_importe_count == 0
             and invalid_fecha_count == 0
             and invalid_fecha_vencimiento_count == 0
             and duplicate_row_count == 0
@@ -1396,6 +1404,7 @@ async def submit_curated_return(
             "column_count": analysis.get("column_count", 0),
             "file_hash": file_hash,
             "duplicate_row_count": duplicate_row_count,
+            "invalid_importe_count": invalid_importe_count,
             "invalid_fecha_count": invalid_fecha_count,
             "invalid_fecha_vencimiento_count": invalid_fecha_vencimiento_count,
         }
@@ -1411,6 +1420,7 @@ async def submit_curated_return(
         "valid": validation["valid"],
         "file_hash": file_hash,
         "duplicate_row_count": validation.get("duplicate_row_count", 0),
+        "invalid_importe_count": validation.get("invalid_importe_count", 0),
         "invalid_fecha_count": validation.get("invalid_fecha_count", 0),
         "invalid_fecha_vencimiento_count": validation.get("invalid_fecha_vencimiento_count", 0),
     }
