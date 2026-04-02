@@ -16,6 +16,13 @@ Este bloque quedó validado y congelado.
 
 ## Comportamiento validado
 
+### PDF / alcance actual
+- pdf_text cerrado y validado en Cloud Shell
+- caso vacío: next_action=human_review_required y normalized_preview vacío
+- caso con texto real: next_action=guided_curation y normalized_preview con 1 fila
+- alcance cerrado: PDF con texto extraíble sí
+- fuera de alcance por ahora: PDF escaneado / OCR no
+
 ### curated-return
 Caso bueno (`demo.csv`)
 - `status = curated_return_valid`
