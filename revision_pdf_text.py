@@ -55,9 +55,10 @@ def profile_pdf_text(loaded_pdf):
     full_text = loaded_pdf.get("full_text", "")
     document_type = detect_pdf_document_type(full_text)
     extracted_fields = extract_pdf_key_fields(full_text, document_type)
+    has_text = bool((full_text or "").strip())
 
     issues = []
-    if not full_text:
+    if not has_text:
         issues.append(
             {
                 "code": "empty_dataset",
@@ -83,6 +84,7 @@ def profile_pdf_text(loaded_pdf):
         else:
             confidence_score -= 5
     confidence_score = max(0, min(100, confidence_score))
+    next_action = "human_review_required" if not has_text else decide_next_action_from_issues(issues)
 
     return {
         "row_count": 0,
@@ -93,7 +95,7 @@ def profile_pdf_text(loaded_pdf):
         "empty_ratio_by_col": {},
         "issues": issues,
         "confidence_score": confidence_score,
-        "next_action": decide_next_action_from_issues(issues),
+        "next_action": next_action,
         "document_type": document_type,
         "extracted_fields": extracted_fields,
     }
