@@ -120,6 +120,9 @@ def build_pdf_text_normalized_preview(bucket, profile, result):
     warnings = [issue.get("message") for issue in profile.get("issues", []) if issue.get("message")]
 
     next_action = result.get("next_action") or "guided_curation"
+    has_text = bool((loaded_pdf.get("full_text") or "").strip())
+    preview_rows = [extracted_fields] if has_text else []
+    row_count_preview = 1 if has_text else 0
 
     return {
         "job_id": job_id,
@@ -129,8 +132,8 @@ def build_pdf_text_normalized_preview(bucket, profile, result):
         "mapped_headers": {},
         "canonical_columns": canonical_columns,
         "missing_canonical_columns": [],
-        "preview_rows": [extracted_fields],
-        "row_count_preview": 1,
+        "preview_rows": preview_rows,
+        "row_count_preview": row_count_preview,
         "issue_codes": issue_codes,
         "warnings": warnings,
         "confidence_score": profile.get("confidence_score"),
