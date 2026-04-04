@@ -6,6 +6,10 @@ import unittest
 from datetime import datetime
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 import smartcounter_ui as ui
 from run_local import run_pipeline_curated
 
@@ -20,7 +24,7 @@ PACK_FILES = [
 
 def run_materialize_tests() -> dict:
     loader = unittest.defaultTestLoader
-    suite = loader.discover("tests", pattern="test_materialize_for_pipeline.py")
+    suite = loader.discover(str(REPO_ROOT / "tests"), pattern="test_materialize_for_pipeline.py")
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     total = result.testsRun
     failed = len(result.failures) + len(result.errors)
@@ -82,8 +86,7 @@ def print_consolidated_output(test_summary: dict, pack_rows: list[dict]) -> None
 
 
 def main() -> int:
-    repo_root = Path(__file__).resolve().parent
-    validation_dir = repo_root / "validation_pack_mvp"
+    validation_dir = REPO_ROOT / "validation_pack_mvp"
 
     test_summary = run_materialize_tests()
     pack_rows = run_pack_validation(validation_dir)
