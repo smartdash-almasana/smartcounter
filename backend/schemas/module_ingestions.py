@@ -13,58 +13,22 @@ SourceType = Literal[
     "other",
 ]
 
-ExpenseSourceChannel = Literal["drive", "email", "upload", "other"]
-ExpenseEvidenceType = Literal[
-    "invoice_pdf",
-    "invoice_image",
-    "ticket",
-    "receipt",
-    "bank_transfer",
-    "payment_screenshot",
-    "manual_note",
-    "mixed",
-]
-ExpensePaymentMethod = Literal["cash", "debit", "credit", "transfer", "wallet", "unknown"]
-ExpenseEvidenceQuality = Literal["high", "medium", "low", "insufficient"]
-ExpenseDocumentStatus = Literal[
-    "captured",
-    "needs_review",
-    "needs_completion",
-    "ready_for_approval",
-    "duplicate_suspected",
-    "invalid",
-]
-
-
-class ExpenseEvidenceCanonicalRow(BaseModel):
-    expense_case_id: str
-    evidence_id: str
-    source_channel: ExpenseSourceChannel
-    evidence_type: ExpenseEvidenceType
-    file_name: str
-    file_url: str | None = None
-    uploaded_at: str
-    submitted_by: str | None = None
-    merchant_name: str | None = None
-    merchant_tax_id: str | None = None
-    expense_date: str | None = None
-    amount: float | int | None = None
-    currency: str | None = None
-    expense_category: str | None = None
-    description: str | None = None
-    payment_method: ExpensePaymentMethod = "unknown"
-    evidence_quality: ExpenseEvidenceQuality
-    document_status: ExpenseDocumentStatus
-    linked_case_count: int = 1
-    requires_review: bool
-    confidence: float
-    notes: str = ""
-
 
 class ExpenseEvidenceFrozenRow(BaseModel):
     request_id: str
+    submitted_at: str
+    requester_name: str
+    merchant_name: str
+    document_type: str
+    document_date: str
+    document_cuit: str
+    amount: float | int
+    currency: str
+    payment_method: str
+    category: str
     evidence_list: List[Dict[str, Any]]
     status: str
+    observation_note: str | None = None
     policy_flag: str | bool | None = None
     resolved_at: str | None = None
     resolver_name: str | None = None

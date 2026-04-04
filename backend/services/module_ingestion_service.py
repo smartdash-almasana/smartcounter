@@ -5,7 +5,6 @@ from typing import Dict
 from google.cloud import storage
 
 from backend.schemas.module_ingestions import (
-    ExpenseEvidenceCanonicalRow,
     ExpenseEvidenceFrozenRow,
     ModuleIngestionRequest,
 )
@@ -78,30 +77,15 @@ def _validate_stock_simple_payload(payload: ModuleIngestionRequest) -> None:
 
 
 def _validate_expense_row_shape(row: dict, idx: int) -> None:
-    has_core_shape = all(key in row for key in ("expense_case_id", "evidence_id", "document_status"))
-    has_frozen_shape = all(key in row for key in ("request_id", "evidence_list", "status"))
-
     try:
-        if has_core_shape:
-            if hasattr(ExpenseEvidenceCanonicalRow, "model_validate"):
-                ExpenseEvidenceCanonicalRow.model_validate(row)
-            else:
-                ExpenseEvidenceCanonicalRow.parse_obj(row)
-            return
-
-        if has_frozen_shape:
-            if hasattr(ExpenseEvidenceFrozenRow, "model_validate"):
-                ExpenseEvidenceFrozenRow.model_validate(row)
-            else:
-                ExpenseEvidenceFrozenRow.parse_obj(row)
-            return
+        if hasattr(ExpenseEvidenceFrozenRow, "model_validate"):
+            ExpenseEvidenceFrozenRow.model_validate(row)
+        else:
+            ExpenseEvidenceFrozenRow.parse_obj(row)
     except Exception as exc:
-        raise ValueError(f"canonical_rows[{idx}] invalido para expense_evidence: {exc}") from exc
-
-    raise ValueError(
-        f"canonical_rows[{idx}] no coincide con un shape soportado para expense_evidence "
-        "(core o borde congelado)."
-    )
+        raise ValueError(
+            f"canonical_rows[{idx}] invalido para expense_evidence (shape borde congelado): {exc}"
+        ) from exc
 
 
 def _extract_finding_type(finding: dict, idx: int) -> str:
