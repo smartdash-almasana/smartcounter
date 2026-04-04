@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from backend.schemas.module_ingestions import (
     ModuleIngestionRequest,
@@ -11,7 +11,11 @@ router = APIRouter(tags=["module-ingestions"])
 
 @router.post("/module-ingestions", response_model=ModuleIngestionResponse)
 def create_module_ingestion(payload: ModuleIngestionRequest):
-    persisted = persist_module_ingestion(payload)
+    try:
+        persisted = persist_module_ingestion(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     return {
         "ok": True,
         "ingestion_id": persisted["ingestion_id"],
