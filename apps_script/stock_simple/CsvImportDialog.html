@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 16px;
+        color: #1f2937;
+        background: #f8fafc;
+      }
+      h2 {
+        margin: 0 0 10px 0;
+        font-size: 20px;
+      }
+      .subtitle {
+        margin: 0 0 14px 0;
+        font-size: 13px;
+        color: #4b5563;
+      }
+      .panel {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .filename {
+        font-size: 13px;
+        color: #111827;
+      }
+      .status {
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .status.ok {
+        color: #047857;
+      }
+      .status.err {
+        color: #b91c1c;
+      }
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        margin: 2px;
+        background: #e5e7eb;
+      }
+      .tag.good {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .tag.bad {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 12px;
+      }
+      th,
+      td {
+        border: 1px solid #e5e7eb;
+        padding: 6px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f3f4f6;
+      }
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      button {
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #111827;
+        border-radius: 6px;
+        padding: 8px 12px;
+        cursor: pointer;
+      }
+      button.primary {
+        background: #0f766e;
+        color: #fff;
+        border-color: #0f766e;
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Cargar archivo de stock</h2>
+    <p class="subtitle">Elegí tu archivo, revisá una vista rápida y continuá.</p>
+
+    <div class="panel">
+      <div class="row">
+        <input id="csvFile" type="file" accept=".csv,text/csv" />
+        <span id="fileName" class="filename muted">Ningún archivo seleccionado</span>
+      </div>
+      <div id="status" class="status"></div>
+    </div>
+
+    <div id="summaryPanel" class="panel" style="display:none;">
+      <div><strong>Columnas encontradas</strong></div>
+      <div id="detectedColumns" style="margin-top:6px;"></div>
+      <div style="margin-top:8px;"><strong>Chequeo de datos necesarios</strong></div>
+      <div id="requiredValidation" style="margin-top:6px;"></div>
+      <div id="csvMeta" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+    <div id="previewPanel" class="panel" style="display:none;">
+      <div><strong>Vista previa (hasta 5 filas)</strong></div>
+      <div id="previewTable"></div>
+    </div>
+
+    <div class="actions">
+      <button id="cancelBtn" type="button">Cancelar</button>
+      <button id="importBtn" class="primary" type="button" disabled>Importar y analizar</button>
+    </div>
+
+    <script>
+      var loadedCsvText = '';
+      var loadedFileName = '';
+      var previewResult = null;
+
+      var fileInput = document.getElementById('csvFile');
+      var fileNameEl = document.getElementById('fileName');
+      var statusEl = document.getElementById('status');
+      var summaryPanel = document.getElementById('summaryPanel');
+      var previewPanel = document.getElementById('previewPanel');
+      var detectedColumnsEl = document.getElementById('detectedColumns');
+      var requiredValidationEl = document.getElementById('requiredValidation');
+      var csvMetaEl = document.getElementById('csvMeta');
+      var previewTableEl = document.getElementById('previewTable');
+      var importBtn = document.getElementById('importBtn');
+      var cancelBtn = document.getElementById('cancelBtn');
+
+      cancelBtn.addEventListener('click', function () {
+        google.script.host.close();
+      });
+
+      importBtn.addEventListener('click', function () {
+        if (!previewResult || !previewResult.valid) {
+          setStatus('Faltan datos necesarios en el archivo.', true);
+          return;
+        }
+
+        setBusy(true);
+        setStatus('Estamos cargando tu archivo...', false);
+
+        google.script.run
+          .withSuccessHandler(function (result) {
+            setBusy(false);
+            setStatus(
+              'Listo. Se cargaron ' + result.imported_rows +
+                ' productos y se detectaron ' + result.alerts_count + ' alertas.',
+              false,
+              true
+            );
+          })
+          .withFailureHandler(function (err) {
+            setBusy(false);
+            setStatus(err && err.message ? err.message : 'No pudimos cargar el archivo.', true);
+          })
+          .importCsvToStockSheet_(loadedCsvText, loadedFileName);
+      });
+
+      fileInput.addEventListener('change', function (event) {
+        var file = event.target.files && event.target.files[0];
+        resetPanels();
+
+        if (!file) {
+          fileNameEl.textContent = 'Ningún archivo seleccionado';
+          return;
+        }
+
+        loadedFileName = file.name;
+        fileNameEl.textContent = file.name;
+
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          loadedCsvText = e.target.result || '';
+          setStatus('Revisando archivo...', false);
+
+          google.script.run
+            .withSuccessHandler(function (result) {
+              previewResult = result;
+              renderPreview(result);
+            })
+            .withFailureHandler(function (err) {
+              setStatus(err && err.message ? err.message : 'No pudimos leer este archivo.', true);
+            })
+            .previewCsvImport_(loadedCsvText, loadedFileName);
+        };
+        reader.onerror = function () {
+          setStatus('No se pudo abrir el archivo seleccionado.', true);
+        };
+        reader.readAsText(file, 'UTF-8');
+      });
+
+      function resetPanels() {
+        previewResult = null;
+        summaryPanel.style.display = 'none';
+        previewPanel.style.display = 'none';
+        detectedColumnsEl.innerHTML = '';
+        requiredValidationEl.innerHTML = '';
+        csvMetaEl.textContent = '';
+        previewTableEl.innerHTML = '';
+        importBtn.disabled = true;
+      }
+
+      function setBusy(busy) {
+        fileInput.disabled = busy;
+        importBtn.disabled = busy || !previewResult || !previewResult.valid;
+        cancelBtn.disabled = busy;
+      }
+
+      function setStatus(message, isError, isSuccess) {
+        statusEl.textContent = message || '';
+        statusEl.className = 'status' + (isError ? ' err' : isSuccess ? ' ok' : '');
+      }
+
+      function renderPreview(result) {
+        summaryPanel.style.display = 'block';
+        previewPanel.style.display = 'block';
+
+        renderColumns(result.headers || []);
+        renderRequiredValidation(result);
+        renderPreviewTable(result.headers || [], result.preview_rows || []);
+
+        csvMetaEl.textContent =
+          'Filas encontradas: ' + result.total_rows;
+
+        if (result.valid) {
+          setStatus('Todo listo para importar.', false, true);
+        } else {
+          setStatus('Faltan algunos datos necesarios para continuar.', true);
+        }
+
+        importBtn.disabled = !result.valid;
+      }
+
+      function renderColumns(headers) {
+        if (!headers.length) {
+          detectedColumnsEl.innerHTML = '<span class="muted">No se detectaron columnas.</span>';
+          return;
+        }
+        detectedColumnsEl.innerHTML = headers
+          .map(function (h) {
+            return '<span class="tag">' + escapeHtml(h) + '</span>';
+          })
+          .join('');
+      }
+
+      function renderRequiredValidation(result) {
+        var required = ['sku', 'producto', 'stock_actual', 'stock_minimo', 'consumo_promedio_diario', 'proveedor'];
+        var labels = {
+          sku: 'Código',
+          producto: 'Producto',
+          stock_actual: 'Stock actual',
+          stock_minimo: 'Stock mínimo',
+          consumo_promedio_diario: 'Consumo diario',
+          proveedor: 'Proveedor'
+        };
+        var html = '';
+
+        required.forEach(function (field) {
+          var recognized = result.recognized_headers && result.recognized_headers[field];
+          if (recognized) {
+            html += '<span class="tag good">' + escapeHtml(labels[field] + ': OK') + '</span>';
+          } else {
+            html += '<span class="tag bad">' + escapeHtml(labels[field] + ': falta') + '</span>';
+          }
+        });
+
+        requiredValidationEl.innerHTML = html;
+      }
+
+      function renderPreviewTable(headers, rows) {
+        if (!rows.length) {
+          previewTableEl.innerHTML = '<p class="muted">No hay filas para mostrar.</p>';
+          return;
+        }
+
+        var thead = '<thead><tr>' + headers.map(function (h) {
+          return '<th>' + escapeHtml(h) + '</th>';
+        }).join('') + '</tr></thead>';
+
+        var tbody = '<tbody>' + rows.map(function (row) {
+          return '<tr>' + row.map(function (cell) {
+            return '<td>' + escapeHtml(cell) + '</td>';
+          }).join('') + '</tr>';
+        }).join('') + '</tbody>';
+
+        previewTableEl.innerHTML = '<table>' + thead + tbody + '</table>';
+      }
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+    </script>
+  </body>
+</html>

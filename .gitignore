@@ -13,3 +13,4 @@ test-results/
 revisiones_local.json
 reglas_cliente_local.json
 validation_pack_mvp/resultado_smoke_regresion_mvp.json
+.agent/
