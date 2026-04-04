@@ -5,6 +5,7 @@ import uuid
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from google.cloud import storage
+from backend.routes.module_ingestions import router as module_ingestions_router
 from revision_common import decide_next_action_from_issues, normalize_text, now_iso, sha256_bytes
 from revision_pdf_text import (
     build_pdf_text_normalized_preview,
@@ -21,6 +22,7 @@ from revision_tabular import (
 )
 
 app = FastAPI()
+app.include_router(module_ingestions_router)
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
