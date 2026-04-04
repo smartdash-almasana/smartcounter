@@ -3,3 +3,13 @@ __pycache__/
 *.pyc
 runtime_backend.log
 app.py.bak
+storage/module_ingestions/*
+!storage/module_ingestions/.gitkeep
+uvicorn_out.log
+uvicorn_err.log
+node_modules/
+.smartcounter_tmp/
+test-results/
+revisiones_local.json
+reglas_cliente_local.json
+validation_pack_mvp/resultado_smoke_regresion_mvp.json
