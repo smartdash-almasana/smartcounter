@@ -4,6 +4,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
+from backend.core.action_store import ActionStore
 from backend.schemas.module_ingestions import (
     ModuleIngestionRequest,
     ModuleIngestionResponse,
@@ -16,6 +17,7 @@ from backend.utils.ids import build_ingestion_id
 
 router = APIRouter(tags=["module-ingestions"])
 log = logging.getLogger(__name__)
+action_store = ActionStore()
 
 
 @router.post("/module-ingestions", response_model=ModuleIngestionResponse)
@@ -97,3 +99,8 @@ def get_module_ingestion_by_id(ingestion_id: str):
         return get_module_ingestion(ingestion_id)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="ingestion_id no encontrado") from exc
+
+
+@router.get("/actions/latest")
+def get_latest_actions(tenant_id: str):
+    return action_store.get_latest_actions(tenant_id)
