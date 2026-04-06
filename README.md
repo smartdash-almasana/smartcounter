@@ -1,50 +1,77 @@
 # SmartCounter
 
-SmartCounter combina un backend FastAPI y modulos edge para ingestar y persistir artefactos operativos.
+## Qué es
+SmartCounter es una plataforma de análisis operativo con flujo:
 
-## Arranque backend
+`ingest -> analyze -> findings -> digest -> actions`
+
+- **ingest**: recibe artefactos (CSV/XLSX/JSON) y los persiste.
+- **analyze**: ejecuta un módulo y produce salida estructurada.
+- **findings**: hallazgos normalizados por severidad y entidad.
+- **digest**: resumen ejecutivo diario a partir de artefactos.
+- **actions**: acciones sugeridas para operar.
+
+## Arquitectura
+
+- **backend**: motor core (FastAPI + contratos + servicios).
+- **apps_script**: fábrica de módulos edge para Google Sheets/Apps Script.
+
+El backend no depende de base de datos para el flujo principal de artefactos: opera sobre almacenamiento de artefactos y contratos versionados.
+
+## Estructura del repo
+
+```text
+backend/
+  api/
+  routes/
+  schemas/
+  services/
+apps_script/
+  templates/
+    base_module/
+  stock_simple/
+docs/
+```
+
+## Primer flujo funcional
+
+1. Un módulo Apps Script arma el contrato SmartCounter.
+2. Envía `POST /ingest/analyze` al backend.
+3. El backend persiste artefactos y ejecuta módulo.
+4. El digest agrega señales/hallazgos en salida ejecutiva.
+5. Se consume por UI, Telegram o capa de acciones.
+
+## Quick start
+
+### 1) Backend
 
 ```powershell
 uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-## Zonas del repo
+Endpoint base de integración:
 
-- `app.py`: entrypoint FastAPI vigente.
-- `backend/routes`: rutas extraidas/modulares (incluye `module-ingestions`).
-- `backend/services`: logica de negocio de backend.
-- `backend/schemas`: contratos Pydantic.
-- `backend/utils`: utilidades compartidas.
-- `apps_script/stock_simple`: modulo edge Apps Script StockSimple.
-- `scripts/smokes`: smokes operativos y runner de regresion.
-- `fixtures/demo`: CSV demo/fixture para pruebas manuales.
-- `storage/module_ingestions`: persistencia local de artefactos de ingestas de modulo.
-- `docs`: operacion y contratos vigentes.
-- `archive`: snapshots y documentos legados archivados.
-- `tests`: pruebas automatizadas actuales.
-
-## Ejecutar unittest
-
-```powershell
-python -m unittest tests/test_materialize_for_pipeline.py -v
+```text
+POST /ingest/analyze
 ```
 
-## Ejecutar smoke/regresion interno
+### 2) Template Apps Script
 
-```powershell
-python scripts/smokes/run_smoke_regresion_mvp.py
+Ruta:
+
+```text
+apps_script/templates/base_module/
 ```
 
-## Ejecutar lote de smokes
+Uso rápido:
 
-```bash
-bash scripts/smokes/run_all_smokes.sh
-```
+1. Copiar la carpeta `base_module` para un módulo nuevo.
+2. Configurar `TENANT_ID`, `MODULE_NAME`, `SOURCE_TYPE`, `SMARTCOUNTER_BASE_URL`.
+3. En Google Sheets ejecutar `SmartCounter -> Run Analysis`.
+4. Verificar respuesta backend y artefactos.
 
-## Ejecutar Playwright smoke
+## Documentación clave
 
-```powershell
-npm install
-npx playwright install chromium
-npx playwright test tests/e2e/mvp_smoke.spec.js
-```
+- [Arquitectura](docs/architecture.md)
+- [Módulos](docs/modules.md)
+- [Digest](docs/digest.md)
