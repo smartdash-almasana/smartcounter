@@ -3,9 +3,12 @@ import json
 import uuid
 
 import pandas as pd
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from google.cloud import storage
 from backend.routes.module_ingestions import router as module_ingestions_router
+from backend.api.digest_router import router as digest_router
+from backend.digest_builder import DigestBuilder
+from backend.services.artifact_store import ArtifactStore
 from revision_common import decide_next_action_from_issues, normalize_text, now_iso, sha256_bytes
 from revision_pdf_text import (
     build_pdf_text_normalized_preview,
@@ -23,6 +26,8 @@ from revision_tabular import (
 
 app = FastAPI()
 app.include_router(module_ingestions_router)
+app.include_router(digest_router)
+app.state.artifact_store = ArtifactStore()
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
@@ -1584,3 +1589,13 @@ def final_parse(job_id: str, tenant_id: str = Form(...)):
         "final_parse_object": final_parse_object_name,
         "final_canonical_object": final_canonical_object_name,
     }
+
+@app.get("/digest/latest")
+def get_digest_latest(tenant_id: str = Query(...)):
+    try:
+        store = ArtifactStore()
+        builder = DigestBuilder(store)
+        digest = builder.build_latest(tenant_id)
+        return digest
+    except Exception as e:
+        return {"error": str(e)}
