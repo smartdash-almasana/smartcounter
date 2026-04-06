@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -9,7 +10,7 @@ class DigestBuilder:
         self.store = artifact_store
 
     def build_latest(self, tenant_id: str) -> dict[str, Any]:
-        artifacts = self._load_latest_artifacts(tenant_id)
+        artifacts = self._load_latest_results(tenant_id)
 
         signals = self._extract_signals(artifacts)
         summary = self._build_summary_block(artifacts)
@@ -27,29 +28,78 @@ class DigestBuilder:
         self._persist_digest(tenant_id, digest)
         return digest
 
-    def _load_latest_artifacts(self, tenant_id: str) -> list[dict[str, Any]]:
-        raw = self.store.get_latest_by_tenant(tenant_id)
-        if isinstance(raw, list):
-            return [item for item in raw if isinstance(item, dict)]
-        return []
+    def _load_latest_results(self, tenant_id: str) -> list[dict[str, Any]]:
+        tenant_root = self.store._tenant_root(tenant_id) / "module_ingestions"
+        results: list[dict[str, Any]] = []
+
+        if not tenant_root.exists() or not tenant_root.is_dir():
+            return results
+
+        for module_dir in sorted(tenant_root.iterdir(), key=lambda p: p.name):
+            if not module_dir.is_dir():
+                continue
+
+            latest_file = module_dir / "latest.json"
+            if not latest_file.exists() or not latest_file.is_file():
+                continue
+
+            try:
+                latest = self._read_json(latest_file)
+                if not isinstance(latest, dict):
+                    continue
+
+                result_path = latest.get("result_path")
+                if not result_path:
+                    continue
+
+                result_file = Path(str(result_path))
+                if not result_file.exists() or not result_file.is_file():
+                    continue
+
+                result = self._read_json(result_file)
+                if isinstance(result, dict):
+                    results.append(result)
+            except Exception:
+                continue
+
+        return results
+
+    def _read_json(self, path: Path) -> Any:
+        reader = getattr(self.store, "_read_json", None)
+        if callable(reader):
+            return reader(path)
+
+        reader_or_none = getattr(self.store, "_read_json_or_none", None)
+        if callable(reader_or_none):
+            data = reader_or_none(path)
+            if data is None:
+                raise ValueError("json_not_found")
+            return data
+
+        raise ValueError("json_reader_not_available")
 
     def _extract_signals(self, artifacts: list[dict[str, Any]]) -> list[dict[str, Any]]:
         signals: list[dict[str, Any]] = []
 
-        for art in artifacts:
-            findings = art.get("findings", [])
-            if not isinstance(findings, list):
+        for result in artifacts:
+            raw_alerts = result.get("alerts", [])
+            if not isinstance(raw_alerts, list):
                 continue
 
-            module_name = str(art.get("module") or "unknown")
-            for finding in findings:
-                if not isinstance(finding, dict):
+            module_name = str(result.get("module") or "unknown")
+            for alert in raw_alerts:
+                if not isinstance(alert, dict):
                     continue
+
+                message = str(alert.get("message") or "").strip()
+                if not message:
+                    continue
+
                 signals.append(
                     {
-                        "severity": self._normalize_severity(finding.get("severity")),
-                        "message": str(finding.get("message") or ""),
-                        "entity": str(finding.get("entity_ref") or ""),
+                        "severity": self._normalize_severity(alert.get("severity")),
+                        "message": message,
+                        "entity": str(alert.get("entity") or alert.get("entity_ref") or ""),
                         "module": module_name,
                     }
                 )
@@ -60,19 +110,19 @@ class DigestBuilder:
         total_findings = 0
         modules: list[dict[str, Any]] = []
 
-        for art in artifacts:
-            summary = art.get("summary", {})
+        for result in artifacts:
+            summary = result.get("summary", {})
             if not isinstance(summary, dict):
                 summary = {}
 
-            findings_count = summary.get("findings_count", 0)
-            if isinstance(findings_count, (int, float)):
-                total_findings += int(findings_count)
+            alerts = result.get("alerts", [])
+            if isinstance(alerts, list):
+                total_findings += len(alerts)
 
             modules.append(
                 {
-                    "module": art.get("module") or "unknown",
-                    "rows": summary.get("total_rows"),
+                    "module": result.get("module") or "unknown",
+                    "summary": summary,
                 }
             )
 
@@ -86,8 +136,11 @@ class DigestBuilder:
 
         sorted_signals = sorted(
             signals,
-            key=lambda signal: priority_map.get(str(signal.get("severity", "")).lower(), 0),
-            reverse=True,
+            key=lambda signal: (
+                -priority_map.get(str(signal.get("severity", "")).lower(), 0),
+                str(signal.get("message") or ""),
+                str(signal.get("entity") or ""),
+            ),
         )
 
         alerts: list[dict[str, Any]] = []

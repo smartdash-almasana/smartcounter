@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Literal
 from pydantic import BaseModel, Field
 
 
-ModuleName = Literal["stock_simple", "expense_evidence"]
+ModuleName = Literal["stock_simple", "expense_evidence", "excel_power_query_edge"]
 SourceType = Literal[
     "google_sheets",
     "upload",
@@ -11,6 +11,7 @@ SourceType = Literal[
     "drive",
     "api",
     "other",
+    "excel_power_query",
 ]
 
 

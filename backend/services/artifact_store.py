@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import os
 import re
 from datetime import datetime
 from pathlib import Path
@@ -23,10 +22,15 @@ class ArtifactStore:
         path.mkdir(parents=True, exist_ok=True)
         return path
 
-    def _ingestion_path(self, tenant_id: str, module: str, ingestion_id: str) -> Path:
+    def _module_base_path(self, tenant_id: str, module: str) -> Path:
         module_part = self._safe_part(module)
+        base = self._tenant_root(tenant_id) / "module_ingestions" / module_part
+        base.mkdir(parents=True, exist_ok=True)
+        return base
+
+    def _ingestion_path(self, tenant_id: str, module: str, ingestion_id: str) -> Path:
         ingestion_part = self._safe_part(ingestion_id)
-        path = self._tenant_root(tenant_id) / "module_ingestions" / module_part / ingestion_part
+        path = self._module_base_path(tenant_id, module) / ingestion_part
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -52,15 +56,51 @@ class ArtifactStore:
         artifacts: dict[str, Any],
     ) -> dict[str, str]:
         base = self._ingestion_path(tenant_id, module, ingestion_id)
-        paths: dict[str, str] = {}
+        required_keys = [
+            "input",
+            "canonical_rows",
+            "findings",
+            "summary",
+            "suggested_actions",
+            "result",
+        ]
 
-        for key, value in artifacts.items():
+        normalized: dict[str, Any] = dict(artifacts or {})
+        normalized.setdefault("input", {})
+        normalized.setdefault("canonical_rows", [])
+        normalized.setdefault("findings", [])
+        normalized.setdefault("summary", {})
+        normalized.setdefault("suggested_actions", [])
+        normalized.setdefault("result", {})
+
+        paths: dict[str, str] = {}
+        for key in required_keys:
+            filename = f"{self._safe_part(key)}.json"
+            full = base / filename
+            self._write_json(full, normalized.get(key))
+            paths[key] = str(full)
+
+        for key, value in normalized.items():
+            if key in paths:
+                continue
             filename = f"{self._safe_part(key)}.json"
             full = base / filename
             self._write_json(full, value)
             paths[key] = str(full)
 
         return paths
+
+    def save_module_latest(
+        self,
+        tenant_id: str,
+        module: str,
+        latest_payload: dict[str, Any],
+    ) -> str:
+        base = self._module_base_path(tenant_id, module)
+        base.mkdir(parents=True, exist_ok=True)
+        path = base / "latest.json"
+        self._write_json(path, latest_payload)
+        return str(path)
 
     def save_digest(self, tenant_id: str, digest: dict[str, Any]) -> str:
         full = self._tenant_root(tenant_id) / "digests" / "latest.json"
