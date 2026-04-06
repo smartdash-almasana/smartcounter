@@ -80,6 +80,7 @@ function showLastResult_() {
       'Alertas detectadas: ' + result.alerts_count,
       'Filas para revisar: ' + result.invalid_rows,
       'Codigo de envio: ' + result.send_code,
+      'Deduplicado: ' + (result.deduplicated ? 'Si' : 'No'),
       'Actualizado: ' + result.generated_at
     ].join('\n');
     ui.alert('Último resultado', message, ui.ButtonSet.OK);
@@ -105,6 +106,8 @@ function runStockSimpleInternal_(options) {
     writeSummarySheet_(summary, suggestedActions);
 
     var payload = {
+      contract_version: 'module-ingestions.v2',
+      source_channel: 'apps_script',
       tenant_id: config.TENANT_ID,
       module: 'stock_simple',
       source_type: 'google_sheets',
@@ -116,9 +119,12 @@ function runStockSimpleInternal_(options) {
     };
 
     var backendResponse = sendToSmartCounter_(payload);
+    var deduplicated = !!(backendResponse.deduplicated || backendResponse.deduped);
+
     var result = {
       ok: true,
       send_code: backendResponse.ingestion_id,
+      deduplicated: deduplicated,
       alerts_count: findings.length,
       total_rows: summary.total_rows,
       valid_rows: summary.valid_rows,
@@ -129,8 +135,13 @@ function runStockSimpleInternal_(options) {
     PropertiesService.getDocumentProperties().setProperty('LAST_STOCK_RESULT', JSON.stringify(result));
 
     if (!silent) {
-      SpreadsheetApp.getActiveSpreadsheet().toast('Listo. Tu estado de stock ya fue actualizado.', 'StockSimple', 6);
-      ui.alert('Estado del stock actualizado', 'Se analizaron ' + summary.total_rows + ' productos y se detectaron ' + findings.length + ' alertas.', ui.ButtonSet.OK);
+      if (deduplicated) {
+        SpreadsheetApp.getActiveSpreadsheet().toast('Ingesta deduplicada. Se reutilizo una ingesta previa.', 'StockSimple', 6);
+        ui.alert('Estado del stock actualizado', 'La ingesta fue deduplicada. Codigo de envio: ' + backendResponse.ingestion_id, ui.ButtonSet.OK);
+      } else {
+        SpreadsheetApp.getActiveSpreadsheet().toast('Listo. Tu estado de stock ya fue actualizado.', 'StockSimple', 6);
+        ui.alert('Estado del stock actualizado', 'Se analizaron ' + summary.total_rows + ' productos y se detectaron ' + findings.length + ' alertas.', ui.ButtonSet.OK);
+      }
     }
 
     return result;

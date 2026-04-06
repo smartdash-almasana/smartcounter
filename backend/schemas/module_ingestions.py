@@ -35,21 +35,30 @@ class ExpenseEvidenceFrozenRow(BaseModel):
 
 
 class ModuleIngestionRequest(BaseModel):
+    contract_version: str = "module-ingestions.v2"
+    source_channel: str | None = None
     tenant_id: str
     module: ModuleName
     source_type: SourceType
     generated_at: str
+    content_hash: str | None = None
     canonical_rows: List[Dict[str, Any]]
     findings: List[Dict[str, Any]]
     summary: Dict[str, Any]
     suggested_actions: List[Dict[str, Any]]
     additional_artifacts: Dict[str, Any] = Field(default_factory=dict)
+    parse_metadata: Dict[str, Any] = Field(default_factory=dict)
+    audit_metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
 class ModuleIngestionResponse(BaseModel):
     ok: bool
     ingestion_id: str
+    contract_version: str
     tenant_id: str
     module: str
     status: str
+    deduplicated: bool
+    deduped: bool
+    content_hash: str
     artifacts: Dict[str, str]

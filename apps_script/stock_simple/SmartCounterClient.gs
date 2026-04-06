@@ -32,5 +32,10 @@ function sendToSmartCounter_(payload) {
     throw new Error('Respuesta invalida desde SmartCounter: ' + body);
   }
 
+  // Compatibilidad: backend puede responder deduplicated o deduped.
+  if (parsed.deduplicated === undefined && parsed.deduped !== undefined) {
+    parsed.deduplicated = !!parsed.deduped;
+  }
+
   return parsed;
 }
