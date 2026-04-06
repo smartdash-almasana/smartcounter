@@ -1,0 +1,26 @@
+{
+  "tenant_id": "debug",
+  "generated_at": "2026-04-06T20:04:50.929229",
+  "summary": {
+    "modules": [
+      {
+        "module": "excel_power_query_edge",
+        "summary": {
+          "total_rows": 1,
+          "valid_rows": 0,
+          "invalid_rows": 1,
+          "total_amount": 0.0
+        }
+      }
+    ],
+    "total_findings": 1
+  },
+  "alerts": [
+    {
+      "severity": "high",
+      "message": "Falta monto",
+      "entity": ""
+    }
+  ],
+  "question": "Hay un problema crítico: Falta monto. ¿Querés resolverlo ahora?"
+}

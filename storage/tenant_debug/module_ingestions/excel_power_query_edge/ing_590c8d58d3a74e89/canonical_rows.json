@@ -1,0 +1,11 @@
+[
+  {
+    "row_id": "row_1",
+    "date": "2026-04-01",
+    "description": "TRANSFERENCIA",
+    "amount": 15000.0,
+    "currency": "ARS",
+    "counterparty": "Proveedor X",
+    "source": "excel_power_query"
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "tenant_id": "debug",
+  "module": "excel_power_query_edge",
+  "latest_ingestion_id": "ing_590c8d58d3a74e89",
+  "updated_at": "2026-04-06T12:00:00Z",
+  "result_path": "storage\\tenant_debug\\module_ingestions\\excel_power_query_edge\\ing_590c8d58d3a74e89\\result.json"
+}

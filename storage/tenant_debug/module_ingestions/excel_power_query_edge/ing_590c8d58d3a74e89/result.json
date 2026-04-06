@@ -1,0 +1,22 @@
+{
+  "tenant_id": "debug",
+  "module": "excel_power_query_edge",
+  "ingestion_id": "ing_590c8d58d3a74e89",
+  "generated_at": "2026-04-06T12:00:00Z",
+  "summary": {
+    "total_rows": 1,
+    "valid_rows": 0,
+    "invalid_rows": 1,
+    "total_amount": 0.0
+  },
+  "alerts": [
+    {
+      "id": "f_row_1_amount",
+      "type": "missing_amount",
+      "severity": "high",
+      "message": "Falta monto",
+      "row_ref": "row_1"
+    }
+  ],
+  "findings_count": 1
+}

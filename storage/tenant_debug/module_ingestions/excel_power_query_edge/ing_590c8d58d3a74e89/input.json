@@ -1,0 +1,44 @@
+{
+  "contract_version": "module-ingestions.v2",
+  "source_channel": null,
+  "tenant_id": "debug",
+  "module": "excel_power_query_edge",
+  "source_type": "excel_power_query",
+  "generated_at": "2026-04-06T12:00:00Z",
+  "content_hash": null,
+  "canonical_rows": [
+    {
+      "row_id": "row_1",
+      "date": "2026-04-01",
+      "description": "TRANSFERENCIA",
+      "amount": 15000.0,
+      "currency": "ARS",
+      "counterparty": "Proveedor X",
+      "source": "excel_power_query"
+    }
+  ],
+  "findings": [
+    {
+      "id": "f_row_1_amount",
+      "type": "missing_amount",
+      "severity": "high",
+      "message": "Falta monto",
+      "row_ref": "row_1"
+    }
+  ],
+  "summary": {
+    "total_rows": 1,
+    "valid_rows": 0,
+    "invalid_rows": 1,
+    "total_amount": 0.0
+  },
+  "suggested_actions": [
+    {
+      "type": "review_data_quality",
+      "priority": "high"
+    }
+  ],
+  "additional_artifacts": {},
+  "parse_metadata": {},
+  "audit_metadata": {}
+}

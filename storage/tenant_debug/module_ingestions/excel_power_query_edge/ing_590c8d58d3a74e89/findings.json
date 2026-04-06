@@ -1,0 +1,9 @@
+[
+  {
+    "id": "f_row_1_amount",
+    "type": "missing_amount",
+    "severity": "high",
+    "message": "Falta monto",
+    "row_ref": "row_1"
+  }
+]
