@@ -660,7 +660,7 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         module_suggested_actions=payload.suggested_actions,
     )
 
-    print("DEBUG ACTIONS:", actions)
+    print("DEBUG DIGEST:", daily_digest)`r`n    print("DEBUG SUGGESTED:", payload.suggested_actions)`r`n    print("DEBUG ACTIONS:", actions)
 
     action_store.save_latest_actions(
         tenant_id=payload.tenant_id,
@@ -777,6 +777,7 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
 
 
 
