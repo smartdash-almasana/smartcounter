@@ -586,7 +586,7 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         action_engine = ActionEngine()
         action_store = ActionStore()
 
-        existing_digest = _load_json_or_none(existing.get("result_object")) or {}
+        existing_digest = _load_json_or_none(artifacts.get("digest")) or {}
 
         actions = action_engine.build_actions(
             tenant_id=payload.tenant_id,
