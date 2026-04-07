@@ -583,6 +583,22 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         existing_result = _load_json_or_none(result_object) if result_object else None
         artifacts = (existing_result or {}).get("artifacts") or {}
 
+        action_engine = ActionEngine()
+        action_store = ActionStore()
+
+        existing_digest = _load_json_or_none(existing.get("result_object")) or {}
+
+        actions = action_engine.build_actions(
+            tenant_id=payload.tenant_id,
+            digest=existing_digest,
+            module_suggested_actions=payload.suggested_actions,
+        )
+
+        action_store.save_latest_actions(
+            tenant_id=payload.tenant_id,
+            actions=actions,
+        )
+
         return {
             "ingestion_id": existing["ingestion_id"],
             "contract_version": "module-ingestions.v2",
@@ -761,6 +777,7 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
 
 
 
