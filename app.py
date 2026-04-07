@@ -4,7 +4,7 @@ import uuid
 
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
-from google.cloud import storage
+
 from backend.routes.module_ingestions import router as module_ingestions_router
 from backend.api.digest_router import router as digest_router
 from backend.digest_builder import DigestBuilder
@@ -31,9 +31,16 @@ app.state.artifact_store = ArtifactStore()
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
+LOCAL_DEV = os.getenv("LOCAL_DEV") == "true"
 
-storage_client = storage.Client(project=PROJECT_ID)
-bucket = storage_client.bucket(BUCKET_NAME)
+if not LOCAL_DEV:
+    from google.cloud import storage
+    storage_client = storage.Client(project=PROJECT_ID)
+    bucket = storage_client.bucket(BUCKET_NAME)
+else:
+    storage = None
+    storage_client = None
+    bucket = None
 
 ALLOWED_ADAPTERS = {"google", "microsoft"}
 

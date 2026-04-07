@@ -4,7 +4,7 @@ import os
 from datetime import datetime, timezone
 from typing import Any, Dict
 
-from google.cloud import storage
+# storage import handled below
 
 from backend.core.action_engine import ActionEngine
 from backend.core.action_store import ActionStore
@@ -20,8 +20,18 @@ from revision_common import now_iso
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
 
-storage_client = storage.Client(project=PROJECT_ID)
-bucket = storage_client.bucket(BUCKET_NAME)
+import os
+
+LOCAL_DEV = os.getenv("LOCAL_DEV") == "true"
+
+if not LOCAL_DEV:
+    from google.cloud import storage
+    storage_client = storage.Client(project=PROJECT_ID)
+    bucket = storage_client.bucket(BUCKET_NAME)
+else:
+    storage = None
+    storage_client = None
+    bucket = None
 
 ALLOWED_EXPENSE_SOURCE_TYPES = {
     "upload",
@@ -119,6 +129,9 @@ def _safe_path_part(value: str) -> str:
 
 
 def _upload_json(object_name: str, payload) -> None:
+    if bucket is None:
+        return
+
     bucket.blob(object_name).upload_from_string(
         json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False),
         content_type="application/json",
@@ -126,6 +139,9 @@ def _upload_json(object_name: str, payload) -> None:
 
 
 def _load_json_or_none(object_name: str):
+    if bucket is None:
+        return None
+
     blob = bucket.blob(object_name)
     if not blob.exists():
         return None
@@ -586,7 +602,8 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         action_engine = ActionEngine()
         action_store = ActionStore()
 
-        existing_digest = _load_json_or_none(artifacts.get("digest")) or {}
+        digest_path = artifacts.get("digest")
+        existing_digest = (_load_json_or_none(digest_path) if digest_path else {}) or {}
 
         actions = action_engine.build_actions(
             tenant_id=payload.tenant_id,
@@ -780,17 +797,3 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
