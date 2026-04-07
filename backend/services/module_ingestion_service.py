@@ -739,6 +739,7 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
     )
 
     return {
+        "ok": True,
         "ingestion_id": ingestion_id,
         "contract_version": payload.contract_version,
         "source_channel": payload.source_channel,
@@ -779,6 +780,7 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
 
 
 

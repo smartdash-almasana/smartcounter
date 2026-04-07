@@ -20,7 +20,9 @@ action_store = ActionStore()
 @router.post("/module-ingestions", response_model=ModuleIngestionResponse)
 def create_module_ingestion(payload: ModuleIngestionRequest):
     try:
-        return persist_module_ingestion(payload)
+        result = persist_module_ingestion(payload)
+        print("DEBUG RESPONSE:", result)
+        return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -36,3 +38,4 @@ def get_module_ingestion_by_id(ingestion_id: str):
 @router.get("/actions/latest")
 def get_latest_actions(tenant_id: str):
     return action_store.get_latest_actions(tenant_id)
+
