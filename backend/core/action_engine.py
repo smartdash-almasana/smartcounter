@@ -14,7 +14,7 @@ class ActionEngine:
     ) -> list[dict]:
         actions: list[dict] = []
 
-        alerts = digest.get("alerts", [])
+        alerts = digest.get("lo_que_importa_ahora", {}).get("alertas", [])
         if isinstance(alerts, list):
             for alert in alerts:
                 if isinstance(alert, dict):
