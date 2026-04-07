@@ -1,8 +1,11 @@
 import logging
+from datetime import datetime
+import uuid
 
 from fastapi import APIRouter, HTTPException
 
 from backend.core.action_store import ActionStore
+from backend.schemas.action_jobs import ActionFromSignalRequest
 from backend.schemas.module_ingestions import (
     ModuleIngestionRequest,
     ModuleIngestionResponse,
@@ -39,3 +42,92 @@ def get_module_ingestion_by_id(ingestion_id: str):
 def get_latest_actions(tenant_id: str):
     return action_store.get_latest_actions(tenant_id)
 
+
+@router.post("/action-jobs/from-signal")
+def create_action_job_from_signal(payload: ActionFromSignalRequest):
+    tenant_id = str(payload.tenant_id or "").strip()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="tenant_id is required")
+
+    action_type = str(payload.action_type or "").strip()
+    if not action_type:
+        raise HTTPException(status_code=400, detail="action_type is required")
+
+    module = str(payload.module or "").strip() or "unknown"
+    source_signal_code = str(payload.source_signal_code or "").strip() or "unknown_signal"
+    context = payload.context if isinstance(payload.context, dict) else {}
+
+    action_id = "act_" + uuid.uuid4().hex[:12]
+
+    action = {
+        "id": action_id,
+        "type": action_type,
+        "priority": "high",
+        "title": str(context.get("title") or "Acción requerida"),
+        "description": f"Acción generada desde señal {source_signal_code}",
+        "module": module,
+        "source_ref": source_signal_code,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+
+    try:
+        latest_actions = action_store.get_latest_actions(tenant_id)
+        actions = latest_actions.get("actions", [])
+        if not isinstance(actions, list):
+            actions = []
+        actions.append(action)
+        action_store.save_latest_actions(tenant_id, actions)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        log.exception("Failed creating manual action from signal")
+        raise HTTPException(status_code=500, detail="Failed creating action from signal") from exc
+
+    return {
+        "ok": True,
+        "action_id": action_id,
+        "status": "pending",
+    }
+from datetime import datetime
+import uuid
+from backend.schemas.action_jobs import ActionFromSignalRequest
+
+@router.post("/action-jobs/from-signal")
+def create_action_job_from_signal(payload: ActionFromSignalRequest):
+    tenant_id = str(payload.tenant_id or "").strip()
+    if not tenant_id:
+        raise HTTPException(status_code=400, detail="tenant_id is required")
+
+    action_type = str(payload.action_type or "").strip()
+    if not action_type:
+        raise HTTPException(status_code=400, detail="action_type is required")
+
+    module = str(payload.module or "").strip() or "unknown"
+    source_signal_code = str(payload.source_signal_code or "").strip() or "unknown_signal"
+    context = payload.context if isinstance(payload.context, dict) else {}
+
+    action_id = "act_" + uuid.uuid4().hex[:12]
+
+    action = {
+        "id": action_id,
+        "type": action_type,
+        "priority": "high",
+        "title": str(context.get("title") or "Acción requerida"),
+        "description": f"Acción generada desde señal {source_signal_code}",
+        "module": module,
+        "source_ref": source_signal_code,
+        "status": "pending",
+        "created_at": datetime.utcnow().isoformat() + "Z",
+    }
+
+    latest = action_store.get_latest_actions(tenant_id)
+    actions = latest.get("actions", [])
+    actions.append(action)
+    action_store.save_latest_actions(tenant_id, actions)
+
+    return {
+        "ok": True,
+        "action_id": action_id,
+        "status": "pending",
+    }
