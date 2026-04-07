@@ -6,6 +6,8 @@ from typing import Any, Dict
 
 from google.cloud import storage
 
+from backend.core.action_engine import ActionEngine
+from backend.core.action_store import ActionStore
 from backend.schemas.module_ingestions import (
     ExpenseEvidenceFrozenRow,
     ModuleIngestionRequest,
@@ -632,6 +634,21 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         normalized_signals=normalized_signals,
         summaries_by_module=summaries_by_module,
     )
+
+    action_engine = ActionEngine()
+    action_store = ActionStore()
+
+    actions = action_engine.build_actions(
+        tenant_id=payload.tenant_id,
+        digest=daily_digest,
+        module_suggested_actions=payload.suggested_actions,
+    )
+
+    action_store.save_latest_actions(
+        tenant_id=payload.tenant_id,
+        actions=actions,
+    )
+
     _upload_json(artifacts["digest"], daily_digest)
 
     request_meta = {
@@ -742,6 +759,7 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
 
 
 
