@@ -7,6 +7,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 
 from backend.routes.module_ingestions import router as module_ingestions_router
 from backend.api.digest_router import router as digest_router
+from backend.api.endpoints.message_ingest import router as message_ingest_router
 from backend.digest_builder import DigestBuilder
 from backend.services.artifact_store import ArtifactStore
 from revision_common import decide_next_action_from_issues, normalize_text, now_iso, sha256_bytes
@@ -27,6 +28,7 @@ from revision_tabular import (
 app = FastAPI()
 app.include_router(module_ingestions_router)
 app.include_router(digest_router)
+app.include_router(message_ingest_router)
 app.state.artifact_store = ArtifactStore()
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
