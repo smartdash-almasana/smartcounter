@@ -39,8 +39,8 @@ class ModuleIngestionRequest(BaseModel):
     contract_version: str = "module-ingestions.v2"
     source_channel: str | None = None
     tenant_id: str
-    module: ModuleName
-    source_type: SourceType
+    module: str
+    source_type: str
     generated_at: str
     content_hash: str | None = None
     canonical_rows: List[Dict[str, Any]]

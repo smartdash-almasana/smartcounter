@@ -3,6 +3,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict
 
 # storage import handled below
@@ -26,20 +27,28 @@ import os
 
 LOCAL_DEV = os.getenv("LOCAL_DEV") == "true"
 
-if not LOCAL_DEV:
+# Global for lazy loading
+_lazy_bucket = None
+
+def _get_bucket():
+    global _lazy_bucket
+    if LOCAL_DEV:
+        return None
+    if _lazy_bucket is not None:
+        return _lazy_bucket
+    
     try:
         from google.cloud import storage
-        storage_client = storage.Client(project=PROJECT_ID)
-        bucket = storage_client.bucket(BUCKET_NAME)
-    except Exception:
-        storage = None
-        storage_client = None
-        bucket = None
-        logger.warning("GCS disabled: running in local mode")
-else:
-    storage = None
-    storage_client = None
-    bucket = None
+        client = storage.Client(project=PROJECT_ID)
+        _lazy_bucket = client.bucket(BUCKET_NAME)
+        return _lazy_bucket
+    except Exception as e:
+        logger.warning(f"GCS disabled/failed: {e}. Running in local mode.")
+        return None
+
+# Keep these as None at module level; functions will call _get_bucket()
+storage_client = None
+bucket = None
 
 ALLOWED_EXPENSE_SOURCE_TYPES = {
     "upload",
@@ -135,22 +144,40 @@ def _safe_path_part(value: str) -> str:
     cleaned = "".join(ch for ch in str(value) if ch.isalnum() or ch in ("-", "_"))
     return cleaned or "unknown"
 
+def _save_local_json(object_name: str, payload: Any):
+    path = Path("storage") / object_name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, default=str)
+
+def _load_local_json(object_name: str):
+    path = Path("storage") / object_name
+    if not path.exists():
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
 
 def _upload_json(object_name: str, payload) -> None:
-    if bucket is None:
+    lbucket = _get_bucket()
+    if lbucket is None:
+        _save_local_json(object_name, payload)
         return
 
-    bucket.blob(object_name).upload_from_string(
-        json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False),
+    lbucket.blob(object_name).upload_from_string(
+        json.dumps(payload, ensure_ascii=False, indent=2, allow_nan=False, default=str),
         content_type="application/json",
     )
 
 
 def _load_json_or_none(object_name: str):
-    if bucket is None:
-        return None
+    lbucket = _get_bucket()
+    if lbucket is None:
+        return _load_local_json(object_name)
 
-    blob = bucket.blob(object_name)
+    blob = lbucket.blob(object_name)
     if not blob.exists():
         return None
     return json.loads(blob.download_as_text())
@@ -587,7 +614,9 @@ def _validate_payload_for_module(payload: ModuleIngestionRequest) -> None:
 def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, object]:
     _validate_payload_for_module(payload)
 
+    print("  Substep 1: validation passed")
     computed_hash = _compute_content_hash(payload)
+    print("  Substep 2: hash computed:", computed_hash)
     if payload.content_hash:
         _validate_content_hash_format(payload.content_hash)
         provided_hash = payload.content_hash.lower()
@@ -600,7 +629,9 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
     tenant_part = _safe_path_part(payload.tenant_id)
     module_part = _safe_path_part(payload.module)
     dedupe_object = f"tenant_{tenant_part}/module_ingestions/{module_part}/_dedupe/{content_hash}.json"
+    print("  Substep 3: checking dedupe at", dedupe_object)
     existing = _load_json_or_none(dedupe_object)
+    print("  Substep 4: dedupe check done, exists:", existing is not None)
 
     if existing and existing.get("ingestion_id"):
         result_object = existing.get("result_object")
@@ -642,7 +673,9 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
     payload_dict = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
     payload_dict["content_hash"] = content_hash
 
+    print("  Substep 5: generating signals and artifacts")
     normalized_signals = build_normalized_signals_from_payload(payload)
+    print("  Substep 6: signals generated, count:", len(normalized_signals))
 
     artifacts = {
         "input": f"{prefix}/input.json",
@@ -656,6 +689,7 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         "result": f"{prefix}/result.json",
     }
 
+    print("  Substep 7: uploading artifacts")
     _upload_json(artifacts["input"], payload_dict)
     _upload_json(artifacts["canonical_rows"], payload.canonical_rows)
     _upload_json(artifacts["findings"], payload.findings)
@@ -663,19 +697,15 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
     _upload_json(artifacts["summary"], payload.summary)
     _upload_json(artifacts["suggested_actions"], payload.suggested_actions)
 
+    print("  Substep 8: building daily digest")
     summaries_by_module = {payload.module: payload.summary}
-    raw_summaries = payload.additional_artifacts.get("summaries_by_module")
-    if isinstance(raw_summaries, dict):
-        for module_key, summary_value in raw_summaries.items():
-            if isinstance(summary_value, dict):
-                summaries_by_module[str(module_key)] = summary_value
-
     daily_digest = build_daily_digest_v1(
         tenant_id=payload.tenant_id,
         normalized_signals=normalized_signals,
         summaries_by_module=summaries_by_module,
     )
 
+    print("  Substep 9: building actions with ActionEngine")
     action_engine = ActionEngine()
     action_store = ActionStore()
 
@@ -685,10 +715,7 @@ def persist_module_ingestion(payload: ModuleIngestionRequest) -> Dict[str, objec
         module_suggested_actions=payload.suggested_actions,
     )
 
-    print("DEBUG DIGEST:", daily_digest)
-    print("DEBUG SUGGESTED:", payload.suggested_actions)
-    print("DEBUG ACTIONS:", actions)
-
+    print("  Substep 10: saving actions to ActionStore")
     action_store.save_latest_actions(
         tenant_id=payload.tenant_id,
         actions=actions,
@@ -805,4 +832,6 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
+
 
