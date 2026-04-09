@@ -1,6 +1,7 @@
 import os
 import json
 import uuid
+import logging
 
 import pandas as pd
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
@@ -8,6 +9,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query
 from backend.routes.module_ingestions import router as module_ingestions_router
 from backend.api.digest_router import router as digest_router
 from backend.api.endpoints.message_ingest import router as message_ingest_router
+from backend.api.endpoints.action_jobs import router as action_jobs_router
 from backend.digest_builder import DigestBuilder
 from backend.services.artifact_store import ArtifactStore
 from revision_common import decide_next_action_from_issues, normalize_text, now_iso, sha256_bytes
@@ -29,16 +31,27 @@ app = FastAPI()
 app.include_router(module_ingestions_router)
 app.include_router(digest_router)
 app.include_router(message_ingest_router)
+app.include_router(action_jobs_router)
 app.state.artifact_store = ArtifactStore()
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
 LOCAL_DEV = os.getenv("LOCAL_DEV") == "true"
+logger = logging.getLogger(__name__)
 
 if not LOCAL_DEV:
-    from google.cloud import storage
-    storage_client = storage.Client(project=PROJECT_ID)
-    bucket = storage_client.bucket(BUCKET_NAME)
+    try:
+        from google.cloud import storage
+    except ImportError:
+        storage = None
+        logger.warning("Google Cloud Storage not available (local dev mode)")
+
+    if storage is not None:
+        storage_client = storage.Client(project=PROJECT_ID)
+        bucket = storage_client.bucket(BUCKET_NAME)
+    else:
+        storage_client = None
+        bucket = None
 else:
     storage = None
     storage_client = None
@@ -1608,3 +1621,5 @@ def get_digest_latest(tenant_id: str = Query(...)):
         return digest
     except Exception as e:
         return {"error": str(e)}
+
+

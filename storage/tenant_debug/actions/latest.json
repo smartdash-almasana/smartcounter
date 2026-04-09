@@ -1,28 +1,17 @@
 {
   "tenant_id": "debug",
-  "generated_at": "2026-04-07T18:07:25.069662Z",
+  "generated_at": "2026-04-09T14:38:12.195911Z",
   "actions": [
     {
-      "id": "act_60751c6e3dbb",
+      "id": "act_848039503b74",
       "type": "review_issue",
-      "priority": "high",
+      "priority": "low",
       "title": "STOCK_SIMPLE Acción requerida",
       "description": "Revisar review_issue.",
       "module": "stock_simple",
       "source_ref": "digest_alert",
       "status": "pending",
-      "created_at": "2026-04-07T18:07:25.059724Z"
-    },
-    {
-      "id": "act_bba9c810ecbc",
-      "type": "generar_documento",
-      "priority": "high",
-      "title": "[UNKNOWN] Generar documento",
-      "description": "severity=high",
-      "module": "unknown",
-      "source_ref": "suggested_action",
-      "status": "pending",
-      "created_at": "2026-04-07T18:07:25.059812Z"
+      "created_at": "2026-04-09T14:38:12.192628Z"
     }
   ]
 }

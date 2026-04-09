@@ -15,6 +15,7 @@ class DigestBuilder:
         signals = self._extract_signals(artifacts)
         summary = self._build_summary_block(artifacts)
         alerts = self._build_alerts(signals)
+        suggested_actions = self._build_suggested_actions(alerts)
         question = self._build_question(alerts)
 
         digest: dict[str, Any] = {
@@ -22,6 +23,7 @@ class DigestBuilder:
             "generated_at": self._now_iso(),
             "summary": summary,
             "alerts": alerts,
+            "suggested_actions": suggested_actions,
             "question": question,
         }
 
@@ -107,49 +109,77 @@ class DigestBuilder:
         return signals
 
     def _build_summary_block(self, artifacts: list[dict[str, Any]]) -> dict[str, Any]:
-        total_findings = 0
-        modules: list[dict[str, Any]] = []
-
+        invalid_rows = 0
         for result in artifacts:
             summary = result.get("summary", {})
             if not isinstance(summary, dict):
-                summary = {}
+                continue
 
-            alerts = result.get("alerts", [])
-            if isinstance(alerts, list):
-                total_findings += len(alerts)
+            raw_invalid = summary.get("invalid_rows", 0)
+            try:
+                invalid_rows += int(raw_invalid)
+            except (TypeError, ValueError):
+                continue
 
-            modules.append(
-                {
-                    "module": result.get("module") or "unknown",
-                    "summary": summary,
-                }
-            )
+        if invalid_rows > 0:
+            return {
+                "main_issue": "Datos incompletos detectados",
+                "impact": "No se pueden procesar correctamente los datos",
+                "items_affected": invalid_rows,
+                "human_readable": "Se detectaron datos incompletos que impiden procesar correctamente la información",
+            }
 
         return {
-            "modules": modules,
-            "total_findings": total_findings,
+            "main_issue": "Sin problemas críticos detectados",
+            "impact": "La información puede procesarse correctamente",
+            "items_affected": 0,
+            "human_readable": "No se detectaron datos incompletos y la información puede procesarse correctamente",
         }
 
     def _build_alerts(self, signals: list[dict[str, Any]]) -> list[dict[str, Any]]:
         priority_map = {"high": 3, "medium": 2, "low": 1}
+        grouped: dict[tuple[str, str], dict[str, Any]] = {}
 
-        sorted_signals = sorted(
-            signals,
-            key=lambda signal: (
-                -priority_map.get(str(signal.get("severity", "")).lower(), 0),
-                str(signal.get("message") or ""),
-                str(signal.get("entity") or ""),
+        for signal in signals:
+            raw_message = str(signal.get("message") or "").strip()
+            if not raw_message:
+                continue
+
+            severity = self._normalize_severity(signal.get("severity"))
+            entity = str(signal.get("entity") or "")
+            key = (raw_message.lower(), entity)
+
+            if key not in grouped:
+                grouped[key] = {
+                    "message": raw_message,
+                    "count": 1,
+                    "severity": severity,
+                    "entity": entity,
+                }
+                continue
+
+            grouped[key]["count"] = int(grouped[key]["count"]) + 1
+            if priority_map.get(severity, 0) > priority_map.get(str(grouped[key]["severity"]), 0):
+                grouped[key]["severity"] = severity
+
+        sorted_groups = sorted(
+            grouped.values(),
+            key=lambda group: (
+                -priority_map.get(str(group.get("severity") or "").lower(), 0),
+                str(group.get("message") or ""),
             ),
         )
 
         alerts: list[dict[str, Any]] = []
-        for signal in sorted_signals[:3]:
+        for group in sorted_groups[:3]:
             alerts.append(
                 {
-                    "severity": signal.get("severity"),
-                    "message": signal.get("message"),
-                    "entity": signal.get("entity"),
+                    "severity": group.get("severity"),
+                    "message": self._build_aggregated_alert_message(
+                        raw_message=str(group.get("message") or ""),
+                        count=int(group.get("count") or 0),
+                    ),
+                    "entity": group.get("entity"),
                 }
             )
 
@@ -158,16 +188,35 @@ class DigestBuilder:
     def _build_question(self, alerts: list[dict[str, Any]]) -> str:
         if not alerts:
             return "Todo está en orden. ¿Querés revisar otro módulo?"
+        return "¿Querés completar los datos faltantes para poder procesar esta información?"
 
-        top = alerts[0]
+    def _build_suggested_actions(self, alerts: list[dict[str, Any]]) -> list[dict[str, str]]:
+        actions: list[dict[str, str]] = []
 
-        if top.get("severity") == "high":
-            return f"Hay un problema crítico: {top.get('message')}. ¿Querés resolverlo ahora?"
+        for alert in alerts[:3]:
+            message = str(alert.get("message") or "").lower()
+            severity = self._normalize_severity(alert.get("severity"))
 
-        if top.get("severity") == "medium":
-            return f"Esto requiere atención: {top.get('message')}. ¿Lo revisamos?"
+            if "falta monto" in message or "datos incompletos" in message:
+                actions.append(
+                    {
+                        "type": "completar_datos",
+                        "title": "Completar montos faltantes",
+                        "description": "Hay registros sin monto. Completá los valores para poder procesarlos correctamente.",
+                        "priority": "high",
+                    }
+                )
+            else:
+                actions.append(
+                    {
+                        "type": "revisar_datos",
+                        "title": "Revisar datos",
+                        "description": "Se detectaron inconsistencias que requieren revisión.",
+                        "priority": severity,
+                    }
+                )
 
-        return "Hay pequeños ajustes pendientes. ¿Querés verlos?"
+        return actions
 
     def _persist_digest(self, tenant_id: str, digest: dict[str, Any]) -> None:
         self.store.save(
@@ -184,3 +233,41 @@ class DigestBuilder:
         if value in {"high", "medium", "low"}:
             return value
         return "low"
+
+    def _contextualize_alert_message(self, message: str) -> str:
+        normalized = message.strip()
+        if not normalized:
+            return "Registro incompleto detectado"
+
+        lowered = normalized.lower()
+        if lowered == "falta monto":
+            return "Registro incompleto: falta monto en una operación detectada"
+
+        if lowered.startswith("falta "):
+            field = normalized[6:].strip()
+            if field:
+                return f"Registro incompleto: falta {field} en una operación detectada"
+
+        return normalized
+
+    def _build_aggregated_alert_message(self, raw_message: str, count: int) -> str:
+        normalized = raw_message.strip()
+        if count <= 0:
+            count = 1
+
+        lowered = normalized.lower()
+        if lowered == "falta monto":
+            if count == 1:
+                return "1 registro incompleto: falta monto en una operación detectada"
+            return f"{count} registros incompletos: falta monto en operaciones detectadas"
+
+        if lowered.startswith("falta "):
+            field = normalized[6:].strip()
+            if field:
+                if count == 1:
+                    return f"1 registro incompleto: falta {field} en una operación detectada"
+                return f"{count} registros incompletos: falta {field} en operaciones detectadas"
+
+        if count == 1:
+            return f"1 alerta detectada: {self._contextualize_alert_message(normalized)}"
+        return f"{count} alertas detectadas: {self._contextualize_alert_message(normalized)}"

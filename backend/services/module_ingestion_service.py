@@ -1,5 +1,6 @@
 import hashlib
 import json
+import logging
 import os
 from datetime import datetime, timezone
 from typing import Any, Dict
@@ -19,15 +20,22 @@ from revision_common import now_iso
 
 PROJECT_ID = os.getenv("PROJECT_ID", os.getenv("GOOGLE_CLOUD_PROJECT", "smartseller-490511"))
 BUCKET_NAME = os.getenv("BUCKET_NAME", "smartcounter-review-dev")
+logger = logging.getLogger(__name__)
 
 import os
 
 LOCAL_DEV = os.getenv("LOCAL_DEV") == "true"
 
 if not LOCAL_DEV:
-    from google.cloud import storage
-    storage_client = storage.Client(project=PROJECT_ID)
-    bucket = storage_client.bucket(BUCKET_NAME)
+    try:
+        from google.cloud import storage
+        storage_client = storage.Client(project=PROJECT_ID)
+        bucket = storage_client.bucket(BUCKET_NAME)
+    except Exception:
+        storage = None
+        storage_client = None
+        bucket = None
+        logger.warning("GCS disabled: running in local mode")
 else:
     storage = None
     storage_client = None
@@ -797,3 +805,4 @@ def get_module_ingestion(ingestion_id: str) -> Dict[str, object]:
         "artifacts": result_data.get("artifacts") or {},
         "created_at": index_data.get("created_at"),
     }
+
