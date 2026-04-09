@@ -23,6 +23,7 @@ async def message_ingest(payload: MessageIngestRequest) -> dict[str, str]:
             payload.text,
             metadata={"tenant_id": payload.tenant_id},
         )
+        result["contract_version"] = "module-ingestions.v2"
     except Exception as exc:
         raise HTTPException(status_code=502, detail="core error") from exc
 
@@ -42,3 +43,4 @@ async def message_ingest(payload: MessageIngestRequest) -> dict[str, str]:
         "status": "processed",
         "module": "message_adapter",
     }
+
