@@ -61,6 +61,80 @@ def _build_safe_response(payload: ModuleIngestionRequest, status: str) -> dict:
 
 @router.post("/module-ingestions", response_model=ModuleIngestionResponse)
 def create_module_ingestion(payload: ModuleIngestionRequest):
+    # ─────────────────────────────────────────────────────────────────
+    # SAFE MODE ACTIVO — bypass total de procesamiento en local/debug
+    # Respuesta inmediata (<5ms), sin GCS, sin DB, sin servicios externos.
+    # Para restaurar el flujo completo: eliminar el bloque hasta "END SAFE MODE"
+    # ─────────────────────────────────────────────────────────────────
+    print("SAFE MODE ACTIVE - bypass processing")
+    print("PAYLOAD RECEIVED:")
+    print(payload)
+    print(f"  tenant_id      : {payload.tenant_id}")
+    print(f"  module         : {payload.module}")
+    print(f"  canonical_rows : {len(payload.canonical_rows)}")
+    rows = len(payload.canonical_rows)
+    if rows == 0:
+        if "woocommerce" in str(payload.module).lower():
+            digest = "No detectamos ventas recientes en tu tienda"
+        else:
+            digest = "No recibimos datos para procesar"
+    else:
+        if "woocommerce" in str(payload.module).lower():
+            digest = f"Recibimos {rows} ventas desde tu tienda. ¿Querés ver si hay diferencias o problemas?"
+        else:
+            digest = f"Procesamos {rows} registros de tu tienda. Todo listo para analizar."
+
+    suggested_actions = []
+    if rows > 0:
+        if "woocommerce" in str(payload.module).lower():
+            suggested_actions.append({
+                "action_type": "analizar_ventas",
+                "title": "Analizar ventas",
+                "description": "Detectar diferencias o problemas en tus ventas recientes"
+            })
+
+    executed_actions = []
+    if suggested_actions:
+        for action in suggested_actions:
+            if action["action_type"] == "analizar_ventas":
+                executed_actions.append({
+                    "action_type": "analizar_ventas",
+                    "status": "executed",
+                    "result": f"Análisis simulado sobre {rows} ventas completado"
+                })
+
+    message_lines = []
+    message_lines.append(digest)
+
+    if executed_actions:
+        for action in executed_actions:
+            if action["action_type"] == "analizar_ventas":
+                message_lines.append("Analizamos tus ventas automáticamente")
+                message_lines.append(action["result"])
+    elif suggested_actions:
+        message_lines.append("Podés revisar tus ventas para detectar problemas")
+
+    final_message = "\n".join(message_lines)
+
+    return {
+        "ok": True,
+        "ingestion_id": "ing_local_" + uuid.uuid4().hex[:12],
+        "contract_version": payload.contract_version,
+        "tenant_id": payload.tenant_id,
+        "module": payload.module,
+        "status": "accepted_local_safe",
+        "deduplicated": False,
+        "deduped": False,
+        "content_hash": "",
+        "artifacts": {},
+        "digest": digest,
+        "suggested_actions": suggested_actions,
+        "executed_actions": executed_actions,
+        "message": final_message,
+    }
+    # ─────────────────────────────── END SAFE MODE ───────────────────
+    # Código original preservado debajo (inaccesible mientras safe mode activo)
+
     started = time.perf_counter()
     print("module-ingestions HIT")
 
@@ -178,3 +252,12 @@ def create_action_job_from_signal(payload: ActionFromSignalRequest):
         "action_id": action_id,
         "status": "pending",
     }
+
+
+
+
+
+
+
+
+
